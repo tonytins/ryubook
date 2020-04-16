@@ -32,9 +32,8 @@ namespace RyuBook
         static void Main(string[] args)
         {
             if ((!File.Exists(Path.Combine(Environment.CurrentDirectory, BOOK_TITLE)))
-                && !File.Exists(Path.Combine(Environment.CurrentDirectory, BOOK_CONTENT))) Console.WriteLine("Unknown location.");
-
-            if (!PandocCheck) Console.WriteLine("Pandoc not found");
+                && !File.Exists(Path.Combine(Environment.CurrentDirectory, BOOK_CONTENT))) { Console.WriteLine("Unknown location."); return; }
+            if (!PandocCheck) { Console.WriteLine("Pandoc not found"); return; }
 
             var book = $"{Path.Combine(Environment.CurrentDirectory, BOOK_TITLE)} {Path.Combine(Environment.CurrentDirectory, BOOK_CONTENT)}";
             var pd = new ProcessStartInfo("pandoc")
