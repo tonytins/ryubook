@@ -4,7 +4,7 @@ RyuBook is a ePub generator written in C#. It uses [Markdown](https://daringfire
 
 ## Usage
 
-```
+```txt
 USAGE:
     ryubook [SUBCOMMAND]
 
@@ -28,4 +28,4 @@ See also the list of [contributors](https://github.com/tonytins/RyuBook/contribu
 
 ## License
 
-I dedicate any and all copyright interest in this software to the public domain - see the [UNLICENSE](UNLICENSE) file for details.
+This project is licensed under the MPL 2.0 license - see the [LICENSE](LICENSE) file for details.
