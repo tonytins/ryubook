@@ -1,74 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using CommandLine;
+using Nett;
 
 namespace RyuBook
 {
-    class Program
+    internal static class Program
     {
-        static readonly string BOOK_TITLE = Path.Combine("src", "title.txt");
-        static readonly string BOOK_CONTENT = Path.Combine("src", "book.md");
-
-        static bool PandocCheck
-        {
-            get
-            {
-                try
-                {
-                    var pd = new ProcessStartInfo("pandoc")
-                    {
-                        WindowStyle = ProcessWindowStyle.Minimized,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        Arguments = "-v"
-                    };
-                    Process.Start(pd);
-                    return true;
-                }
-                catch { return false; }
-            }
-        }
+        const string _buildPath = "build";
 
         static void Main(string[] args)
         {
-            if ((!File.Exists(Path.Combine(Environment.CurrentDirectory, BOOK_TITLE)))
-                && !File.Exists(Path.Combine(Environment.CurrentDirectory, BOOK_CONTENT)))
-            {
-                Console.WriteLine("Unknown location.");
-                return;
-            }
-
-            if (!PandocCheck)
-            {
-                Console.WriteLine("Pandoc not found");
-                return;
-            }
-
-            Parser.Default.ParseArguments<BuildOption, CleanOption>(args)
+            Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
                 .WithParsed<CleanOption>(o =>
                 {
-                    var books = Directory.GetFiles(Environment.CurrentDirectory, "*.epub");
+                    if (!EnviromentCheck.IsDirAndPandoc) return;
+
+                    var books = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _buildPath), "*.epub");
+
                     foreach (var book in books)
-                        File.Delete(book);
+                        File.Delete(Path.Combine(_buildPath, book));
+                })
+                .WithParsed<InitOption>(o =>
+                {
+                    var cfgFile = Path.Combine(Environment.CurrentDirectory, "ryubook.toml");
+                    var cfg = new Settings();
+
+                    if (!EnviromentCheck.IsDirectory)
+                        Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "src"));
+
+                    if (!File.Exists(cfgFile))
+                        Toml.WriteFile(cfg, cfgFile);
                 })
                 .WithParsed<BuildOption>(o =>
                 {
-                    GenerateBook(o.BookName, o.Verbose);
-                })
-                .WithNotParsed(err =>
-                {
-                    Console.WriteLine("Could not parse command.");
+                    if (!EnviromentCheck.IsDirAndPandoc) return;
+                    if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, _buildPath)))
+                        Directory.CreateDirectory("build");
+
+                    GenerateBook(string.IsNullOrEmpty(o.BookName) ? Settings.GetSettings.Name : o.BookName, o.Verbose);
                 });
         }
 
         static void GenerateBook(string name, bool verbose)
         {
-            var book =
-                $"{Path.Combine(Environment.CurrentDirectory, BOOK_TITLE)} {Path.Combine(Environment.CurrentDirectory, BOOK_CONTENT)}";
-            var pdArgs = string.IsNullOrEmpty(name) ? $"{book} -o book.epub" : $"{book} -o {name}.epub";
+            var book = $"{Path.Combine(Environment.CurrentDirectory, BookConsts.BOOK_TITLE)} {Path.Combine(Environment.CurrentDirectory, BookConsts.BOOK_CONTENT)}";
+            var pdArgs = string.IsNullOrEmpty(name)
+                ? $"{book} -o {Path.Combine(Environment.CurrentDirectory, _buildPath, "book.epub")}"
+                : $"{book} -o {Path.Combine(Environment.CurrentDirectory, _buildPath, $"{name}.epub")}";
+
             var procInfo = new ProcessStartInfo("pandoc")
             {
                 WindowStyle = ProcessWindowStyle.Minimized,
