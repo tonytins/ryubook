@@ -42,13 +42,13 @@ Using the ``build`` command alone will build the book as is and output ``book.ep
 |   +-- title.txt
 ```
 
-The book contents exists ``/src`` directory. Both ``book.md`` and ``title.txt`` are required. RyuBook currently can't build multiple Markdown files.
+The book contents exists in the ``/src`` directory. Both ``book.md`` and ``title.txt`` are required. RyuBook currently can't build multiple Markdown files.
 
-## title.txt
+### title.txt
 
 ```txt
 % Book Title
 % Author
 ```
 
-The book's metadata is built from ``title.txt``. Title and author are on seperate lines with a ``%`` before each word.
+The book's metadata is contained in ``title.txt``. Title and author are on seperate lines with a ``%`` before each word.
