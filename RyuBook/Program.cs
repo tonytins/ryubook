@@ -16,9 +16,8 @@ namespace RyuBook
                 .WithParsed<CleanOption>(o =>
                 {
                     if (!EnviromentCheck.IsDirAndPandoc) return;
-
+                    
                     var books = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _buildPath), "*.epub");
-
                     foreach (var book in books)
                         File.Delete(Path.Combine(_buildPath, book));
                 })
@@ -35,11 +34,12 @@ namespace RyuBook
                 })
                 .WithParsed<BuildOption>(o =>
                 {
-                    if (!EnviromentCheck.IsDirAndPandoc) return;
                     if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, _buildPath)))
                         Directory.CreateDirectory("build");
 
-                    GenerateBook(string.IsNullOrEmpty(o.BookName) ? Settings.GetSettings.Name : o.BookName, o.Verbose);
+                    if (EnviromentCheck.IsDirAndPandoc)
+                        GenerateBook(string.IsNullOrEmpty(o.BookName) ? Settings.GetSettings.Name : o.BookName,
+                            o.Verbose);
                 });
         }
 

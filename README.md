@@ -6,7 +6,7 @@ RyuBook is a ePub generator written in C#. It uses [Markdown](https://daringfire
 
 ```
 USAGE:
-    ryubook [FLAGS] [SUBCOMMAND]
+    ryubook [SUBCOMMAND]
 
 SUBCOMMANDS:
   init       Creates a new project.
