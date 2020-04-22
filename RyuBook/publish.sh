@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 if [ "$(uname)" == "Darwin" ]; then
     echo "Publishing macOS release."

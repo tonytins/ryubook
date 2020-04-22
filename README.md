@@ -1,6 +1,6 @@
 # RyuBook
 
-RyuBook is a ePub generator that uses Pandoc for generation.
+RyuBook is a ePub generator written in C#. It uses Markdown as a source and Pandoc for generation. To easily build as a self-contained standalone executable, use the ``publish.sh`` or ``publish.ps1`` scripts.
 
 ## Authors
 
