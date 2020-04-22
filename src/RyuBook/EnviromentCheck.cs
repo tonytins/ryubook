@@ -32,7 +32,7 @@ namespace RyuBook
             {
                 try
                 {
-                    return (File.Exists(Path.Combine(Environment.CurrentDirectory, BookConsts.BOOK_TITLE))) || File.Exists(Path.Combine(Environment.CurrentDirectory, BookConsts.BOOK_CONTENT));
+                    return (File.Exists(Path.Combine(Environment.CurrentDirectory, AppConsts.BookTitle))) || File.Exists(Path.Combine(Environment.CurrentDirectory, AppConsts.BookContent));
                 }
                 catch { return false; }
             }

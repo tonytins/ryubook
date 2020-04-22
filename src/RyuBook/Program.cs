@@ -16,14 +16,14 @@ namespace RyuBook
                 .WithParsed<CleanOption>(o =>
                 {
                     if (!EnviromentCheck.IsDirAndPandoc) return;
-                    
+
                     var books = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _buildPath), "*.epub");
                     foreach (var book in books)
                         File.Delete(Path.Combine(_buildPath, book));
                 })
                 .WithParsed<InitOption>(o =>
                 {
-                    var cfgFile = Path.Combine(Environment.CurrentDirectory, "ryubook.toml");
+                    var cfgFile = Path.Combine(Environment.CurrentDirectory, AppConsts.ConfigFile);
                     var cfg = new Settings();
 
                     if (!EnviromentCheck.IsDirectory)
@@ -45,7 +45,8 @@ namespace RyuBook
 
         static void GenerateBook(string name, bool verbose)
         {
-            var book = $"{Path.Combine(Environment.CurrentDirectory, BookConsts.BOOK_TITLE)} {Path.Combine(Environment.CurrentDirectory, BookConsts.BOOK_CONTENT)}";
+            var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.BookTitle)} {Path.Combine(Environment.CurrentDirectory, AppConsts.BookContent)}";
+            
             var pdArgs = string.IsNullOrEmpty(name)
                 ? $"{book} -o {Path.Combine(Environment.CurrentDirectory, _buildPath, "book.epub")}"
                 : $"{book} -o {Path.Combine(Environment.CurrentDirectory, _buildPath, $"{name}.epub")}";

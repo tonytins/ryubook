@@ -12,7 +12,7 @@ namespace RyuBook
         {
             get
             {
-                var cfgFile = Path.Combine(Environment.CurrentDirectory, "ryubook.toml");
+                var cfgFile = Path.Combine(Environment.CurrentDirectory, AppConsts.ConfigFile);
 
                 return File.Exists(cfgFile) ? Toml.ReadFile<Settings>(cfgFile) : new Settings();
             }
