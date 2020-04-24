@@ -42,9 +42,9 @@ namespace RyuBook
                     if (!Directory.Exists(_buildPath))
                         Directory.CreateDirectory(_buildPath);
 
-                    // If Pandoc and /build directory are present, generate book
-                    if (EnviromentCheck.IsDirAndPandoc)
-                        GenerateBook(string.IsNullOrEmpty(o.Title) ? ProjectFile.GetProject.Title : o.Title);
+                    if (!EnviromentCheck.IsSrcDirAndPandoc) return;
+
+                    GenerateBook(File.Exists(AppConsts.ConfigFile) ? ProjectFile.GetProject.Title : o.Title);
                 });
         }
 

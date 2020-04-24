@@ -38,7 +38,7 @@ namespace RyuBook
             }
         }
 
-        public static bool IsDirAndPandoc
+        public static bool IsSrcDirAndPandoc
         {
             get
             {
