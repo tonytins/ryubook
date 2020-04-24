@@ -8,23 +8,26 @@ namespace RyuBook
 {
     internal static class Program
     {
-        const string _buildPath = "build";
+        static readonly string _buildPath = Path.Combine(Environment.CurrentDirectory, "build");
 
         static void Main(string[] args)
         {
             Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
                 .WithParsed<CleanOption>(o =>
                 {
-                    if (!EnviromentCheck.IsDirAndPandoc) return;
 
-                    var books = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, _buildPath), "*.epub");
-                    foreach (var book in books)
-                        File.Delete(Path.Combine(_buildPath, book));
+                    if (Directory.Exists(_buildPath))
+                    {
+                        var books = Directory.GetFiles(_buildPath, "*.epub");
+
+                        foreach (var book in books)
+                            File.Delete(Path.Combine(_buildPath, book));
+                    }
                 })
                 .WithParsed<InitOption>(o =>
                 {
                     var cfgFile = Path.Combine(Environment.CurrentDirectory, AppConsts.ConfigFile);
-                    var cfg = new Settings();
+                    var cfg = new ProjectFile();
 
                     if (!EnviromentCheck.IsDirectory)
                         Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "src"));
@@ -34,11 +37,11 @@ namespace RyuBook
                 })
                 .WithParsed<BuildOption>(o =>
                 {
-                    if (!Directory.Exists(Path.Combine(Environment.CurrentDirectory, _buildPath)))
+                    if (!Directory.Exists(_buildPath))
                         Directory.CreateDirectory("build");
 
                     if (EnviromentCheck.IsDirAndPandoc)
-                        GenerateBook(string.IsNullOrEmpty(o.BookName) ? Settings.GetSettings.Name : o.BookName,
+                        GenerateBook(string.IsNullOrEmpty(o.BookName) ? ProjectFile.GetProject.Name : o.BookName,
                             o.Verbose);
                 });
         }
@@ -46,10 +49,10 @@ namespace RyuBook
         static void GenerateBook(string name, bool verbose)
         {
             var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.BookTitle)} {Path.Combine(Environment.CurrentDirectory, AppConsts.BookContent)}";
-            
+
             var pdArgs = string.IsNullOrEmpty(name)
-                ? $"{book} -o {Path.Combine(Environment.CurrentDirectory, _buildPath, "book.epub")}"
-                : $"{book} -o {Path.Combine(Environment.CurrentDirectory, _buildPath, $"{name}.epub")}";
+                ? $"{book} -o {Path.Combine(_buildPath, "book.epub")}"
+                : $"{book} -o {Path.Combine(_buildPath, $"{name}.epub")}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
