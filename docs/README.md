@@ -53,4 +53,4 @@ The book's metadata is contained in ``title.txt``. Title and author are on seper
 
 ## ryubook.toml
 
-``ryubook.toml`` is the project file that can optionally be generated when using the ``init`` command. Currently, the only option is ``Title =`` and uses the name of the directory name.
+``ryubook.toml`` is the project file that can optionally be generated when using the ``init`` command. Currently, the only option is ``Title``. Ryubook will grab the directory's name and use that as the title in the project file.

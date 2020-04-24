@@ -25,16 +25,16 @@ namespace RyuBook
                 })
                 .WithParsed<InitOption>(o =>
                 {
-                    var cfgFile = Path.Combine(Environment.CurrentDirectory, AppConsts.ConfigFile);
-                    var proj = new ProjectFile();
+                    var projFile = Path.Combine(Environment.CurrentDirectory, AppConsts.ProjectFile);
+                    var proj = new Project();
 
                     // If source directory doesn't exist, create it
                     if (!EnviromentCheck.IsSrcDirectory)
                         Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "src"));
 
                     // If project file doesn't exist, create it
-                    if (!File.Exists(cfgFile))
-                        Toml.WriteFile(proj, cfgFile);
+                    if (!File.Exists(projFile))
+                        Toml.WriteFile(proj, projFile);
                 })
                 .WithParsed<BuildOption>(o =>
                 {
@@ -44,7 +44,7 @@ namespace RyuBook
 
                     if (!EnviromentCheck.IsSrcDirAndPandoc) return;
 
-                    GenerateBook(File.Exists(AppConsts.ConfigFile) ? ProjectFile.GetProject.Title : o.Title);
+                    GenerateBook(File.Exists(AppConsts.ProjectFile) ? Project.GetProject.Title : o.Title);
                 });
         }
 
@@ -52,13 +52,13 @@ namespace RyuBook
         {
             var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile)} {Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile)}";
 
-            var newTitle = title
+            var projTitle = title
                 .Replace("\u0020", string.Empty)
                 .ToLowerInvariant();
 
             var pdArgs = string.IsNullOrEmpty(title)
                 ? $"{book} -o {Path.Combine(_buildPath, "book.epub")}"
-                : $"{book} -o {Path.Combine(_buildPath, $"{newTitle}.epub")}";
+                : $"{book} -o {Path.Combine(_buildPath, $"{projTitle}.epub")}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
