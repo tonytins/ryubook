@@ -15,44 +15,46 @@ namespace RyuBook
             Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
                 .WithParsed<CleanOption>(o =>
                 {
+                    var books = Directory.GetFiles(_buildPath, "*.epub");
 
-                    if (Directory.Exists(_buildPath))
-                    {
-                        var books = Directory.GetFiles(_buildPath, "*.epub");
+                    // If no books exist, do nothing
+                    if (books.Length == 0) return;
 
-                        foreach (var book in books)
-                            File.Delete(Path.Combine(_buildPath, book));
-                    }
+                    foreach (var book in books)
+                        File.Delete(Path.Combine(_buildPath, book));
                 })
                 .WithParsed<InitOption>(o =>
                 {
                     var cfgFile = Path.Combine(Environment.CurrentDirectory, AppConsts.ConfigFile);
-                    var cfg = new ProjectFile();
+                    var proj = new ProjectFile();
 
-                    if (!EnviromentCheck.IsDirectory)
+                    // If source directory doesn't exist, create it
+                    if (!EnviromentCheck.IsSrcDirectory)
                         Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "src"));
 
+                    // If project file doesn't exist, create it
                     if (!File.Exists(cfgFile))
-                        Toml.WriteFile(cfg, cfgFile);
+                        Toml.WriteFile(proj, cfgFile);
                 })
                 .WithParsed<BuildOption>(o =>
                 {
+                    // If the /build directory doesn't exist, create it.
                     if (!Directory.Exists(_buildPath))
-                        Directory.CreateDirectory("build");
+                        Directory.CreateDirectory(_buildPath);
 
+                    // If Pandoc and /build directory are present, generate book
                     if (EnviromentCheck.IsDirAndPandoc)
-                        GenerateBook(string.IsNullOrEmpty(o.BookName) ? ProjectFile.GetProject.Name : o.BookName,
-                            o.Verbose);
+                        GenerateBook(string.IsNullOrEmpty(o.Title) ? ProjectFile.GetProject.Title : o.Title);
                 });
         }
 
-        static void GenerateBook(string name, bool verbose)
+        static void GenerateBook(string title)
         {
-            var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.BookTitle)} {Path.Combine(Environment.CurrentDirectory, AppConsts.BookContent)}";
+            var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile)} {Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile)}";
 
-            var pdArgs = string.IsNullOrEmpty(name)
+            var pdArgs = string.IsNullOrEmpty(title)
                 ? $"{book} -o {Path.Combine(_buildPath, "book.epub")}"
-                : $"{book} -o {Path.Combine(_buildPath, $"{name}.epub")}";
+                : $"{book} -o {Path.Combine(_buildPath, $"{title.ToLowerInvariant().Trim('\u0020')}.epub")}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
@@ -61,12 +63,6 @@ namespace RyuBook
                 RedirectStandardOutput = true,
                 Arguments = pdArgs,
             };
-
-            if (verbose)
-            {
-                procInfo.UseShellExecute = true;
-                procInfo.RedirectStandardOutput = false;
-            }
 
             Process.Start(procInfo);
         }

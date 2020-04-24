@@ -6,7 +6,7 @@ namespace RyuBook
 {
     public class ProjectFile
     {
-        public string Name { get; set; } = new DirectoryInfo(Environment.CurrentDirectory).Name;
+        public string Title { get; set; } = new DirectoryInfo(Environment.CurrentDirectory).Name;
 
         public static ProjectFile GetProject
         {

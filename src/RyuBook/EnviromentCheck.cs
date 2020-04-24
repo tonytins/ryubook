@@ -26,13 +26,13 @@ namespace RyuBook
             }
         }
 
-        public static bool IsDirectory
+        public static bool IsSrcDirectory
         {
             get
             {
                 try
                 {
-                    return (File.Exists(Path.Combine(Environment.CurrentDirectory, AppConsts.BookTitle))) || File.Exists(Path.Combine(Environment.CurrentDirectory, AppConsts.BookContent));
+                    return (File.Exists(Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile))) || File.Exists(Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile));
                 }
                 catch { return false; }
             }
@@ -44,7 +44,7 @@ namespace RyuBook
             {
                 try
                 {
-                   return IsDirectory && IsPandoc;
+                   return IsSrcDirectory && IsPandoc;
 
                 }
                 catch { return false; }

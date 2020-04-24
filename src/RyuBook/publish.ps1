@@ -1,15 +1,15 @@
 if($IsMacOS)
 {
-    echo "Publishing macOS release."
+    Write-Output "Publishing macOS release."
     dotnet publish -c Release -r osx-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
 }
 elseif ($IsLinux)
 {
-    echo "Publishing Linux release."
+    Write-Output "Publishing Linux release."
     dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
 }
 else
 {
-    echo "Publishing Windows release."
+    Write-Output "Publishing Windows release."
     dotnet publish -c Release -r win-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
 }
