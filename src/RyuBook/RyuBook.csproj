@@ -3,7 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <AssemblyName>ryubook</AssemblyName>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>net50</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
