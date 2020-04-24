@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/RyuBook/bin/Debug/netcoreapp3.1/ryubook.dll",
+            "program": "${workspaceFolder}/src/RyuBook/bin/Debug/netcoreapp3.1/ryubook.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/RyuBook",
+            "cwd": "${workspaceFolder}/src/RyuBook",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
