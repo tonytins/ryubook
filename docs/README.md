@@ -27,12 +27,10 @@ USAGE:
     ryubook build [FLAGS]
 
 FLAGS:
-  -n, --name
-
-  -v, --verbose
+  -t, --title
 ```
 
-Using the ``build`` command alone will build the book as is and output ``book.epub``. If ``ryubook.toml`` is present or ``--name`` is used then name of your choice will be used. Adding ``-v`` or ``--verbose`` will display Pandoc's output.
+Using the ``build`` command alone will build the book as is and output ``book.epub``. If ``ryubook.toml`` is present or ``--title`` is used then name of your choice will be used.
 
 ## Directory Structure
 

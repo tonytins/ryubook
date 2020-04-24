@@ -52,9 +52,13 @@ namespace RyuBook
         {
             var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile)} {Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile)}";
 
+            var newTitle = title
+                .Replace("\u0020", string.Empty)
+                .ToLowerInvariant();
+
             var pdArgs = string.IsNullOrEmpty(title)
                 ? $"{book} -o {Path.Combine(_buildPath, "book.epub")}"
-                : $"{book} -o {Path.Combine(_buildPath, $"{title.ToLowerInvariant().Trim('\u0020')}.epub")}";
+                : $"{book} -o {Path.Combine(_buildPath, $"{newTitle}.epub")}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
