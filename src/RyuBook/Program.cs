@@ -44,11 +44,13 @@ namespace RyuBook
 
                     if (!EnviromentCheck.IsSrcDirAndPandoc) return;
 
-                    GenerateBook(File.Exists(AppConsts.ProjectFile) ? Project.GetProject.Title : o.Title);
+                    GenerateBook(File.Exists(AppConsts.ProjectFile)
+                        ? Project.GetProject.Title
+                        : o.Title, o.Verbose);
                 });
         }
 
-        static void GenerateBook(string title)
+        static void GenerateBook(string title, bool verbose)
         {
             var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile)} {Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile)}";
 
@@ -68,7 +70,14 @@ namespace RyuBook
                 Arguments = pdArgs,
             };
 
-            Process.Start(procInfo);
+            if (verbose)
+            {
+                var proc = Process.Start(procInfo);
+                var output = proc.StandardOutput.ReadToEnd();
+                Console.WriteLine(output);
+            }
+            else
+                Process.Start(procInfo);
         }
     }
 }

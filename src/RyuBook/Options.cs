@@ -6,6 +6,7 @@ namespace RyuBook
     class BuildOption
     {
         [Option('t', "title")] public string Title { get; set; }
+        [Option('v', "verbose")] public bool Verbose { get; set; }
     }
 
     [Verb("clean", HelpText = "Removes all books in the /build directory.")]
