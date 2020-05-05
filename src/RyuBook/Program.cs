@@ -51,10 +51,23 @@ namespace RyuBook
 
                     if (!EnviromentCheck.IsSrcDirAndPandoc) return;
 
-                    if (string.IsNullOrEmpty(o.Format))
+                    if (o.Format.Contains("doc",  StringComparison.OrdinalIgnoreCase)
+                        || o.Format.Contains("docx",  StringComparison.OrdinalIgnoreCase))
                         GenerateBook(File.Exists(AppConsts.ProjectFile)
-                        ? Project.GetProject.Title
-                        : o.Title, o.Format);
+                            ? Project.GetProject.Title
+                            : o.Title, "docx");
+                    else if (o.Format.Contains("odt",  StringComparison.OrdinalIgnoreCase))
+                        GenerateBook(File.Exists(AppConsts.ProjectFile)
+                            ? Project.GetProject.Title
+                            : o.Title, "odt");
+                    else if (o.Format.Contains("html",  StringComparison.OrdinalIgnoreCase))
+                        GenerateBook(File.Exists(AppConsts.ProjectFile)
+                            ? Project.GetProject.Title
+                            : o.Title, "html");
+                    else if (o.Format.Contains("rtf",  StringComparison.OrdinalIgnoreCase))
+                        GenerateBook(File.Exists(AppConsts.ProjectFile)
+                            ? Project.GetProject.Title
+                            : o.Title, "rtf");
                     else
                         GenerateBook(File.Exists(AppConsts.ProjectFile)
                             ? Project.GetProject.Title
@@ -62,28 +75,19 @@ namespace RyuBook
                 });
         }
 
-        static void GenerateBook(string title)
-            => GenerateBook(title, string.Empty);
-        static void GenerateBook(string title,  string format)
+        static void GenerateBook(string title,  string format = "epub")
         {
             var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile)} {Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile)}";
 
-            var pdArgs = PandocArgs(book, title);
+            // Remove whitespace and make all letters lowercase
+            var projTitle = title
+                .Replace("\u0020", string.Empty)
+                .ToLowerInvariant();
 
-            #region Other formats
-            if (format.Contains("doc",  StringComparison.OrdinalIgnoreCase)
-                || format.Contains("docx",  StringComparison.OrdinalIgnoreCase))
-                pdArgs = PandocArgs(book, title, "docx");
-
-            if (format.Contains("odt",  StringComparison.OrdinalIgnoreCase))
-                pdArgs = PandocArgs(book, title, "odt");
-
-            if (format.Contains("html",  StringComparison.OrdinalIgnoreCase))
-                pdArgs = PandocArgs(book, title, "html");
-
-            if (format.Contains("rtf",  StringComparison.OrdinalIgnoreCase))
-                pdArgs = PandocArgs(book, title, "rtf");
-            #endregion
+            // If "title" is empty, output "book.epub"
+            var pdArgs = string.IsNullOrEmpty(title)
+                ? $"{book} -o {Path.Combine(_buildPath, $"book.{format}")}"
+                : $"{book} -o {Path.Combine(_buildPath, $"{projTitle}.{format}")}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
@@ -94,19 +98,6 @@ namespace RyuBook
             };
 
             Process.Start(procInfo);
-        }
-
-        static string PandocArgs(string book, string title, string format = "epub")
-        {
-            // Remove whitespace and make all letters lowercase
-            var projTitle = title
-                .Replace("\u0020", string.Empty)
-                .ToLowerInvariant();
-
-            // If "title" is empty, output "book.epub"
-            return string.IsNullOrEmpty(title)
-                ? $"{book} -o {Path.Combine(_buildPath, $"book.{format}")}"
-                : $"{book} -o {Path.Combine(_buildPath, $"{projTitle}.{format}")}";
         }
     }
 }
