@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using CommandLine;
 using Nett;
 
@@ -15,10 +16,11 @@ namespace RyuBook
             Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
                 .WithParsed<CleanOption>(o =>
                 {
-                    var books = Directory.GetFiles(_buildPath, "*.epub");
-
-                    // If no books exist, do nothing
-                    if (books.Length == 0) return;
+                    var books = Directory.EnumerateFiles(_buildPath, "*.*")
+                        .Where(f => f.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
+                                    || f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
+                                    || f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
+                                    || f.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
 
                     foreach (var book in books)
                         File.Delete(Path.Combine(_buildPath, book));
@@ -44,23 +46,33 @@ namespace RyuBook
 
                     if (!EnviromentCheck.IsSrcDirAndPandoc) return;
 
-                    GenerateBook(File.Exists(AppConsts.ProjectFile)
+                    if (string.IsNullOrEmpty(o.Format))
+                        GenerateBook(File.Exists(AppConsts.ProjectFile)
                         ? Project.GetProject.Title
-                        : o.Title, o.Verbose);
+                        : o.Title, o.Format);
+                    else
+                        GenerateBook(File.Exists(AppConsts.ProjectFile)
+                            ? Project.GetProject.Title
+                            : o.Title);
                 });
         }
 
-        static void GenerateBook(string title, bool verbose)
+        static void GenerateBook(string title)
+            => GenerateBook(title, string.Empty);
+        static void GenerateBook(string title,  string format)
         {
             var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile)} {Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile)}";
 
-            var projTitle = title
-                .Replace("\u0020", string.Empty)
-                .ToLowerInvariant();
+            var pdArgs = string.IsNullOrEmpty(format) ?
+                PandocArgs(book, title) :
+                PandocArgs(book, title, format);
 
-            var pdArgs = string.IsNullOrEmpty(title)
-                ? $"{book} -o {Path.Combine(_buildPath, "book.epub")}"
-                : $"{book} -o {Path.Combine(_buildPath, $"{projTitle}.epub")}";
+            if (format.Contains("doc") || format.Contains("docx"))
+                pdArgs = PandocArgs(book, title, "docx");
+
+            if (format.Contains("html")) pdArgs = PandocArgs(book, title, "html");
+
+            if (format.Contains("rtf")) pdArgs = PandocArgs(book, title, "rtf");
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
@@ -70,14 +82,20 @@ namespace RyuBook
                 Arguments = pdArgs,
             };
 
-            if (verbose)
-            {
-                var proc = Process.Start(procInfo);
-                var output = proc.StandardOutput.ReadToEnd();
-                Console.WriteLine(output);
-            }
-            else
-                Process.Start(procInfo);
+            Process.Start(procInfo);
+        }
+
+        static string PandocArgs(string book, string title, string format = "epub")
+        {
+            // Remove whitespace and make all letters lowercase
+            var projTitle = title
+                .Replace("\u0020", string.Empty)
+                .ToLowerInvariant();
+
+            // If "title" is empty, output "book.epub"
+            return string.IsNullOrEmpty(title)
+                ? $"{book} -o {Path.Combine(_buildPath, $"book.{format}")}"
+                : $"{book} -o {Path.Combine(_buildPath, $"{projTitle}.{format}")}";
         }
     }
 }
