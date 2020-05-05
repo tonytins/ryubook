@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using CommandLine;
 using Nett;
 
@@ -30,23 +31,21 @@ namespace RyuBook
                 })
                 .WithParsed<InitOption>(o =>
                 {
-                    var projFile = Path.Combine(Environment.CurrentDirectory, AppConsts.ProjectFile);
-                    var proj = new Project();
+                    // If source directory exists, exit
+                    if (EnviromentCheck.IsSrcDirectory) return;
+
+                    var projAuthor = string.IsNullOrEmpty(o.Author)
+                        ? "Lorem Ipsum"
+                        : o.Author;
+                    var projTitle = string.IsNullOrEmpty(o.Author)
+                        ? "Book Title"
+                        : o.Title;
                     var metadataFile = Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile);
                     var contentFile = Path.Combine(AppConsts.SrcPath, AppConsts.ContentFile);
-                    var sampleMetadata = $"% Book Title{Environment.NewLine}% Lorem Ipsum";
 
-                    // If source directory doesn't exist, create it
-                    if (!EnviromentCheck.IsSrcDirectory)
-                    {
-                        Directory.CreateDirectory(AppConsts.SrcPath);
-                        File.WriteAllText(Path.Combine(AppConsts.SrcPath, contentFile), "# Your book");
-                        File.WriteAllText(Path.Combine(AppConsts.SrcPath, metadataFile), sampleMetadata);
-                    }
-
-                    // If project file doesn't exist, create it
-                    if (!File.Exists(projFile))
-                        Toml.WriteFile(proj, projFile);
+                    Directory.CreateDirectory(AppConsts.SrcPath);
+                    File.WriteAllText(Path.Combine(AppConsts.SrcPath, contentFile), "# Your book");
+                    File.WriteAllText(Path.Combine(AppConsts.SrcPath, metadataFile), $"% {projTitle}{Environment.NewLine}% {projAuthor}");
                 })
                 .WithParsed<BuildOption>(o =>
                 {
@@ -54,48 +53,39 @@ namespace RyuBook
                     if (!Directory.Exists(AppConsts.BuildPath))
                         Directory.CreateDirectory(AppConsts.BuildPath);
 
+                    var metaDateFile = File.ReadLines(Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile));
+                    var bookTitle = metaDateFile.First().Replace("%\u0020", string.Empty);
+
                     if (!EnviromentCheck.IsSrcDirAndPandoc) return;
 
                     if (o.Format.Contains("doc",  StringComparison.OrdinalIgnoreCase)
                         || o.Format.Contains("docx",  StringComparison.OrdinalIgnoreCase))
                     {
-                        GenerateBook(File.Exists(AppConsts.ProjectFile)
-                            ? Project.GetProject.Title
-                            : o.Title, "docx");
+                        GenerateBook(bookTitle, "docx");
                     }
                     else if (o.Format.Contains("odt",  StringComparison.OrdinalIgnoreCase))
                     {
-                        GenerateBook(File.Exists(AppConsts.ProjectFile)
-                            ? Project.GetProject.Title
-                            : o.Title, "odt");
+                        GenerateBook(bookTitle, "odt");
                     }
                     else if (o.Format.Contains("html",  StringComparison.OrdinalIgnoreCase))
                     {
-                        GenerateBook(File.Exists(AppConsts.ProjectFile)
-                            ? Project.GetProject.Title
-                            : o.Title, "html");
+                        GenerateBook(bookTitle, "html");
                     }
                     else if (o.Format.Contains("rtf",  StringComparison.OrdinalIgnoreCase))
                     {
 
-                        GenerateBook(File.Exists(AppConsts.ProjectFile)
-                            ? Project.GetProject.Title
-                            : o.Title, "rtf");
+                        GenerateBook(bookTitle, "rtf");
                     }
                     else if (o.Format.Contains("all", StringComparison.OrdinalIgnoreCase))
                     {
                         var allFmt = new[] {"rtf", "odt", "html", "docx", "epub"};
 
                         foreach (var fmt in allFmt)
-                            GenerateBook(File.Exists(AppConsts.ProjectFile)
-                                ? Project.GetProject.Title
-                                : o.Title, fmt);
+                            GenerateBook(bookTitle, fmt);
 
                     }
                     else
-                        GenerateBook(File.Exists(AppConsts.ProjectFile)
-                            ? Project.GetProject.Title
-                            : o.Title);
+                        GenerateBook(bookTitle);
                 });
         }
 
