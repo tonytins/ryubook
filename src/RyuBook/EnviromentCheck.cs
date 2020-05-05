@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -26,17 +25,7 @@ namespace RyuBook
             }
         }
 
-        public static bool IsSrcDirectory
-        {
-            get
-            {
-                try
-                {
-                    return (File.Exists(Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile))) || File.Exists(Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile));
-                }
-                catch { return false; }
-            }
-        }
+        public static bool IsSrcDirectory => Directory.Exists(AppConsts.SrcPath);
 
         public static bool IsSrcDirAndPandoc
         {

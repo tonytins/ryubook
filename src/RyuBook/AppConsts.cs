@@ -1,11 +1,15 @@
+using System;
 using System.IO;
 
 namespace RyuBook
 {
     public struct AppConsts
     {
-        public static readonly string MetadateFile = Path.Combine("src", "title.txt");
-        public static readonly string ContentFile = Path.Combine("src", "book.md");
+        public const string MetadateFile = "title.txt";
+        public const string ContentFile = "book.md";
         public const string ProjectFile = "ryubook.toml";
+
+        public static readonly string BuildPath = Path.Combine(Environment.CurrentDirectory, "build");
+        public static readonly string  SrcPath = Path.Combine(Environment.CurrentDirectory, "src");
     }
 }
