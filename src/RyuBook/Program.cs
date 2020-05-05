@@ -53,21 +53,40 @@ namespace RyuBook
 
                     if (o.Format.Contains("doc",  StringComparison.OrdinalIgnoreCase)
                         || o.Format.Contains("docx",  StringComparison.OrdinalIgnoreCase))
+                    {
                         GenerateBook(File.Exists(AppConsts.ProjectFile)
                             ? Project.GetProject.Title
                             : o.Title, "docx");
+                    }
                     else if (o.Format.Contains("odt",  StringComparison.OrdinalIgnoreCase))
+                    {
                         GenerateBook(File.Exists(AppConsts.ProjectFile)
                             ? Project.GetProject.Title
                             : o.Title, "odt");
+                    }
                     else if (o.Format.Contains("html",  StringComparison.OrdinalIgnoreCase))
+                    {
                         GenerateBook(File.Exists(AppConsts.ProjectFile)
                             ? Project.GetProject.Title
                             : o.Title, "html");
+                    }
                     else if (o.Format.Contains("rtf",  StringComparison.OrdinalIgnoreCase))
+                    {
+
                         GenerateBook(File.Exists(AppConsts.ProjectFile)
                             ? Project.GetProject.Title
                             : o.Title, "rtf");
+                    }
+                    else if (o.Format.Contains("all", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var allFmt = new[] {"rtf", "odt", "html", "docx", "epub"};
+
+                        foreach (var fmt in allFmt)
+                            GenerateBook(File.Exists(AppConsts.ProjectFile)
+                                ? Project.GetProject.Title
+                                : o.Title, fmt);
+
+                    }
                     else
                         GenerateBook(File.Exists(AppConsts.ProjectFile)
                             ? Project.GetProject.Title
