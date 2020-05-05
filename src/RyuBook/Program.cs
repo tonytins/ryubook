@@ -19,6 +19,11 @@ namespace RyuBook
                     var books = Directory.EnumerateFiles(_buildPath, "*.*")
                         .Where(f => f.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
                                     || f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
+                                    /* While output to .doc may not be supported by Pandoc,
+                                     .docx can still be converted to .doc using other programs,
+                                     such as LibreOffice. */
+                                    || f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
+                                    || f.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
                                     || f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
                                     || f.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
 
@@ -63,16 +68,22 @@ namespace RyuBook
         {
             var book = $"{Path.Combine(Environment.CurrentDirectory, AppConsts.MetadateFile)} {Path.Combine(Environment.CurrentDirectory, AppConsts.ContentFile)}";
 
-            var pdArgs = string.IsNullOrEmpty(format) ?
-                PandocArgs(book, title) :
-                PandocArgs(book, title, format);
+            var pdArgs = PandocArgs(book, title);
 
-            if (format.Contains("doc") || format.Contains("docx"))
+            #region Other formats
+            if (format.Contains("doc",  StringComparison.OrdinalIgnoreCase)
+                || format.Contains("docx",  StringComparison.OrdinalIgnoreCase))
                 pdArgs = PandocArgs(book, title, "docx");
 
-            if (format.Contains("html")) pdArgs = PandocArgs(book, title, "html");
+            if (format.Contains("odt",  StringComparison.OrdinalIgnoreCase))
+                pdArgs = PandocArgs(book, title, "odt");
 
-            if (format.Contains("rtf")) pdArgs = PandocArgs(book, title, "rtf");
+            if (format.Contains("html",  StringComparison.OrdinalIgnoreCase))
+                pdArgs = PandocArgs(book, title, "html");
+
+            if (format.Contains("rtf",  StringComparison.OrdinalIgnoreCase))
+                pdArgs = PandocArgs(book, title, "rtf");
+            #endregion
 
             var procInfo = new ProcessStartInfo("pandoc")
             {

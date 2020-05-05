@@ -28,9 +28,21 @@ USAGE:
 
 FLAGS:
   -t, --title
+  -f  --format
 ```
 
-Using the ``build`` command alone will build the book as is and output ``book.epub``. If ``ryubook.toml`` is present or ``--title`` is used then name of your choice will be used.
+Using the ``build`` command alone will build the book as is and output ``book.epub``. If ``ryubook.toml`` is present or ``--title`` is used then name of your choice will be used. You can also build formats other then the default ``epub`` by passing `-f` or ``--format``.
+
+#### Supported formats
+
+In order to avoid installing additional dependencies, Ryubook doesn't support outputting to all of Pandoc's supported formats.
+
+- ``odt``
+- ``docx``
+- ``rtf``
+- ``html``
+
+Note that passing ``doc`` will always output to ``docx``. This is a limitation of Pandoc and not Ryubook. If you still need to output to the legacy Word document format, then you will have to use another tool or word processor that supports saving to that format.
 
 ## Directory Structure
 
