@@ -53,43 +53,58 @@ namespace RyuBook
                     if (!Directory.Exists(AppConsts.BuildPath))
                         Directory.CreateDirectory(AppConsts.BuildPath);
 
-                    var metaDateFile = File.ReadLines(Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile));
-                    var bookTitle = metaDateFile.First().Replace("%\u0020", string.Empty);
+                    var allFmt = new[] { "rtf", "odt", "html", "docx", "epub" };
 
-                    if (!EnviromentCheck.IsSrcDirAndPandoc) return;
-
-                    if (o.Format.Contains("doc",  StringComparison.OrdinalIgnoreCase)
-                        || o.Format.Contains("docx",  StringComparison.OrdinalIgnoreCase))
+                    if (o.Format.Contains("list", StringComparison.OrdinalIgnoreCase))
                     {
-                        GenerateBook(bookTitle, "docx");
-                    }
-                    else if (o.Format.Contains("odt",  StringComparison.OrdinalIgnoreCase))
-                    {
-                        GenerateBook(bookTitle, "odt");
-                    }
-                    else if (o.Format.Contains("html",  StringComparison.OrdinalIgnoreCase))
-                    {
-                        GenerateBook(bookTitle, "html");
-                    }
-                    else if (o.Format.Contains("rtf",  StringComparison.OrdinalIgnoreCase))
-                    {
-
-                        GenerateBook(bookTitle, "rtf");
-                    }
-                    else if (o.Format.Contains("all", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var allFmt = new[] {"rtf", "odt", "html", "docx", "epub"};
+                        var fmts = string.Empty;
 
                         foreach (var fmt in allFmt)
-                            GenerateBook(bookTitle, fmt);
+                            fmts += $"{fmt}, ";
 
+                        var endComma = ", ";
+                        var fmtsList = fmts.TrimEnd(endComma.ToCharArray());
+
+                        Console.WriteLine($"These formats are supported: {fmtsList}.");
+                        Console.ReadKey();
                     }
                     else
-                        GenerateBook(bookTitle);
+                    {
+                        try
+                        {
+                            var metaDateFile = File.ReadLines(Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile));
+                            var bookTitle = metaDateFile.First().Replace("%\u0020", string.Empty);
+
+                            if (!EnviromentCheck.IsSrcDirAndPandoc) return;
+
+                            if (o.Format.Contains("doc", StringComparison.OrdinalIgnoreCase)
+                                || o.Format.Contains("docx", StringComparison.OrdinalIgnoreCase))
+                                GenerateBook(bookTitle, "docx");
+                            else if (o.Format.Contains("odt", StringComparison.OrdinalIgnoreCase))
+                                GenerateBook(bookTitle, "odt");
+                            else if (o.Format.Contains("html", StringComparison.OrdinalIgnoreCase))
+                                GenerateBook(bookTitle, "html");
+                            else if (o.Format.Contains("rtf", StringComparison.OrdinalIgnoreCase))
+                                GenerateBook(bookTitle, "rtf");
+                            else if (o.Format.Contains("all", StringComparison.OrdinalIgnoreCase))
+                                foreach (var fmt in allFmt)
+                                    GenerateBook(bookTitle, fmt);
+                            else
+                                GenerateBook(bookTitle);
+                        }
+                        catch (IOException err)
+                        {
+                            if (Debugger.IsAttached)
+                                Console.WriteLine($"{err.Message}{Environment.NewLine}{err.StackTrace}");
+                            else
+                                Console.WriteLine(err.Message);
+                        }
+                    }
+
                 });
         }
 
-        static void GenerateBook(string title,  string format = "epub")
+        static void GenerateBook(string title, string format = "epub")
         {
             var book = $"{Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile)} {Path.Combine(AppConsts.SrcPath, AppConsts.ContentFile)}";
 

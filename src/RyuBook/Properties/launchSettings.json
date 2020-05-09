@@ -1,0 +1,8 @@
+{
+    "profiles": {
+        "RyuBook": {
+            "commandName": "Project",
+            "commandLineArgs": "build -f list"
+        }
+    }
+}
