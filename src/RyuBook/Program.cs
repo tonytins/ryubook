@@ -2,9 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using CommandLine;
-using Nett;
 
 namespace RyuBook
 {
@@ -16,18 +14,23 @@ namespace RyuBook
                 .WithParsed<CleanOption>(o =>
                 {
                     var books = Directory.EnumerateFiles(AppConsts.BuildPath, "*.*")
-                        .Where(f => f.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
-                                    || f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
-                                    /* While output to .doc may not be supported by Pandoc,
+                        .Where(fmt => fmt.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
+                                    || fmt.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
+                                    /* While .doc output may not be supported by Pandoc,
                                      .docx can still be converted to .doc using other programs,
                                      such as LibreOffice. */
-                                    || f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
-                                    || f.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
-                                    || f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
-                                    || f.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
+                                    || fmt.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
+                                    || fmt.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
+                                    || fmt.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
+                                    || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
 
                     foreach (var book in books)
-                        File.Delete(Path.Combine(AppConsts.BuildPath, book));
+                    {
+                        var path = Path.Combine(AppConsts.BuildPath, book);
+
+                        if (File.Exists(path))
+                            File.Delete(path);
+                    }
                 })
                 .WithParsed<InitOption>(o =>
                 {
@@ -66,7 +69,6 @@ namespace RyuBook
                         var fmtsList = fmts.TrimEnd(endComma.ToCharArray());
 
                         Console.WriteLine($"These formats are supported: {fmtsList}.");
-                        Console.ReadKey();
                     }
                     else
                     {
