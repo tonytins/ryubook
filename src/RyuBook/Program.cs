@@ -37,18 +37,31 @@ namespace RyuBook
                     // If source directory exists, exit
                     if (EnviromentCheck.IsSrcDirectory) return;
 
+                    // Files
+                    var metadataFile = Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile);
+                    var contentFile = Path.Combine(AppConsts.SrcPath, AppConsts.FirstChapterFile);
+
+                    // Metadata
                     var projAuthor = string.IsNullOrEmpty(o.Author)
                         ? "Lorem Ipsum"
                         : o.Author;
                     var projTitle = string.IsNullOrEmpty(o.Author)
                         ? "Book Title"
                         : o.Title;
-                    var metadataFile = Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile);
-                    var contentFile = Path.Combine(AppConsts.SrcPath, AppConsts.ContentFile);
+                    var metadata = new[] {
+                        $"title: {projTitle}{Environment.NewLine}",
+                        $"author: {projAuthor}{Environment.NewLine}"
+                    };
+                    var metaContent = string.Empty;
+
+                    // Iterate over an array of metadata and add it
+                    // to the metadata content
+                    foreach (var data in metadata)
+                        metaContent += data;
 
                     Directory.CreateDirectory(AppConsts.SrcPath);
                     File.WriteAllText(Path.Combine(AppConsts.SrcPath, contentFile), "# Your book");
-                    File.WriteAllText(Path.Combine(AppConsts.SrcPath, metadataFile), $"% {projTitle}{Environment.NewLine}% {projAuthor}");
+                    File.WriteAllText(Path.Combine(AppConsts.SrcPath, metadataFile), $"---{Environment.NewLine}{metaContent}{Environment.NewLine}---");
                 })
                 .WithParsed<BuildOption>(o =>
                 {
@@ -108,17 +121,26 @@ namespace RyuBook
 
         static void GenerateBook(string title, string format = "epub")
         {
-            var book = $"{Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile)} {Path.Combine(AppConsts.SrcPath, AppConsts.ContentFile)}";
+            var allChapters = string.Empty;
+            var chapters = Directory.EnumerateFiles(AppConsts.SrcPath,
+                "*.*", SearchOption.AllDirectories)
+                        .Where(fmt => fmt.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                        .Where(fmt => fmt.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase));
+
+            foreach (var chapter in chapters)
+                allChapters += @$" {chapter}";
 
             // Remove whitespace and make all letters lowercase
             var projTitle = title
                 .Replace("\u0020", string.Empty)
                 .ToLowerInvariant();
 
+            var bookSrc = $"{Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile)} {Path.Combine(AppConsts.SrcPath, allChapters)}";
+
             // If "title" is empty, output "book.epub"
             var pdArgs = string.IsNullOrEmpty(title)
-                ? $"{book} -o {Path.Combine(AppConsts.BuildPath, $"book.{format}")}"
-                : $"{book} -o {Path.Combine(AppConsts.BuildPath, $"{projTitle}.{format}")}";
+                ? $"{bookSrc} -o {Path.Combine(AppConsts.BuildPath, $"book.{format}")}"
+                : $"{bookSrc} -o {Path.Combine(AppConsts.BuildPath, $"{projTitle}.{format}")}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
