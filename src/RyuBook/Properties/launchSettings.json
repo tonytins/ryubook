@@ -2,7 +2,7 @@
     "profiles": {
         "RyuBook": {
             "commandName": "Project",
-            "commandLineArgs": "build -f list"
+            "commandLineArgs": "help"
         }
     }
 }

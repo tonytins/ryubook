@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using CommandLine;
@@ -13,20 +14,23 @@ namespace RyuBook
             Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
                 .WithParsed<CleanOption>(o =>
                 {
-                    var books = Directory.EnumerateFiles(AppConsts.BuildPath, "*.*")
+                    var buildDir = Path.Combine(o.Directory, "build");
+                    var books = Directory.EnumerateFiles(buildDir)
                         .Where(fmt => fmt.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
-                                    || fmt.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
-                                    /* While .doc output may not be supported by Pandoc,
-                                     .docx can still be converted to .doc using other programs,
-                                     such as LibreOffice. */
-                                    || fmt.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
-                                    || fmt.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
-                                    || fmt.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
-                                    || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
+                        /*
+                         * While .doc output may not be supported by Pandoc,
+                         * .docx can still be converted to .doc using other programs,
+                         * such as LibreOffice.
+                         */
+                         || fmt.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
+                         || fmt.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
+                         || fmt.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
+                         || fmt.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
+                         || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
 
                     foreach (var book in books)
                     {
-                        var path = Path.Combine(AppConsts.BuildPath, book);
+                        var path = Path.Combine(buildDir, book);
 
                         if (File.Exists(path))
                             File.Delete(path);
@@ -37,9 +41,11 @@ namespace RyuBook
                     // If source directory exists, exit
                     if (EnviromentCheck.IsSrcDirectory) return;
 
+                    var srcDir = Path.Combine(o.Directory, "src");
+
                     // Files
-                    var metadataFile = Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile);
-                    var contentFile = Path.Combine(AppConsts.SrcPath, AppConsts.FirstChapterFile);
+                    var metadataFile = Path.Combine(srcDir, AppConsts.MetadateFile);
+                    var firstChapterFile = Path.Combine(srcDir, AppConsts.FirstChapterFile);
 
                     // Metadata
                     var projAuthor = string.IsNullOrEmpty(o.Author)
@@ -48,26 +54,31 @@ namespace RyuBook
                     var projTitle = string.IsNullOrEmpty(o.Author)
                         ? "Book Title"
                         : o.Title;
+
+                    /*
+                     * It's easier (and more readable) to contruct the metadata out of an array
+                     * because the content isn't very dense.
+                     */
                     var metadata = new[] {
-                        $"title: {projTitle}{Environment.NewLine}",
-                        $"author: {projAuthor}{Environment.NewLine}"
+                        $"---",
+                        $"title: {projTitle}",
+                        $"author: {projAuthor}",
+                        $"language: {CultureInfo.CurrentCulture.Name}",
+                        "---"
                     };
-                    var metaContent = string.Empty;
 
-                    // Iterate over an array of metadata and add it
-                    // to the metadata content
-                    foreach (var data in metadata)
-                        metaContent += data;
-
-                    Directory.CreateDirectory(AppConsts.SrcPath);
-                    File.WriteAllText(Path.Combine(AppConsts.SrcPath, contentFile), "# Your book");
-                    File.WriteAllText(Path.Combine(AppConsts.SrcPath, metadataFile), $"---{Environment.NewLine}{metaContent}{Environment.NewLine}---");
+                    Directory.CreateDirectory(srcDir);
+                    File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), "# Your book");
+                    File.WriteAllLinesAsync(Path.Combine(srcDir, metadataFile), metadata);
                 })
                 .WithParsed<BuildOption>(o =>
                 {
+                    var buildDir = Path.Combine(o.Directory, "build");
+                    var srcDir = Path.Combine(o.Directory, "src");
+
                     // If the /build directory doesn't exist, create it.
-                    if (!Directory.Exists(AppConsts.BuildPath))
-                        Directory.CreateDirectory(AppConsts.BuildPath);
+                    if (!Directory.Exists(buildDir))
+                        Directory.CreateDirectory(buildDir);
 
                     var allFmt = new[] { "rtf", "odt", "html", "docx", "epub" };
 
@@ -87,25 +98,26 @@ namespace RyuBook
                     {
                         try
                         {
-                            var metaDateFile = File.ReadLines(Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile));
-                            var bookTitle = metaDateFile.First().Replace("%\u0020", string.Empty);
+                            var metaDateFile = File.ReadLines(Path.Combine(srcDir, AppConsts.MetadateFile));
+                            var bookTitle = metaDateFile.First()
+                            .Replace("title:\u0020", string.Empty);
 
                             if (!EnviromentCheck.IsSrcDirAndPandoc) return;
 
                             if (o.Format.Contains("doc", StringComparison.OrdinalIgnoreCase)
                                 || o.Format.Contains("docx", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, "docx");
+                                GenerateBook(bookTitle, o.Directory, "docx");
                             else if (o.Format.Contains("odt", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, "odt");
+                                GenerateBook(bookTitle, o.Directory, "odt");
                             else if (o.Format.Contains("html", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, "html");
+                                GenerateBook(bookTitle, o.Directory, "html");
                             else if (o.Format.Contains("rtf", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, "rtf");
+                                GenerateBook(bookTitle, o.Directory, "rtf");
                             else if (o.Format.Contains("all", StringComparison.OrdinalIgnoreCase))
                                 foreach (var fmt in allFmt)
-                                    GenerateBook(bookTitle, fmt);
+                                    GenerateBook(bookTitle, o.Directory, fmt);
                             else
-                                GenerateBook(bookTitle);
+                                GenerateBook(bookTitle, o.Directory);
                         }
                         catch (IOException err)
                         {
@@ -119,28 +131,28 @@ namespace RyuBook
                 });
         }
 
-        static void GenerateBook(string title, string format = "epub")
+        static void GenerateBook(string title, string dir, string format = "epub")
         {
+            var srcPath = Path.Combine(dir, "src");
+            var buildPath = Path.Combine(dir, "buid");
             var allChapters = string.Empty;
-            var chapters = Directory.EnumerateFiles(AppConsts.SrcPath,
-                "*.*", SearchOption.AllDirectories)
-                        .Where(fmt => fmt.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
-                        .Where(fmt => fmt.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase));
+            var listChapters = Directory.EnumerateFiles(srcPath)
+                .Where(fmt =>
+                fmt.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+                || fmt.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase));
 
-            foreach (var chapter in chapters)
-                allChapters += @$" {chapter}";
+            foreach (var chapter in listChapters)
+                allChapters += @$" {Path.Combine(srcPath, chapter)} ";
 
             // Remove whitespace and make all letters lowercase
             var projTitle = title
                 .Replace("\u0020", string.Empty)
                 .ToLowerInvariant();
 
-            var bookSrc = $"{Path.Combine(AppConsts.SrcPath, AppConsts.MetadateFile)} {Path.Combine(AppConsts.SrcPath, allChapters)}";
+            var bookSrc = $"{Path.Combine(srcPath, AppConsts.MetadateFile)} {allChapters}";
 
             // If "title" is empty, output "book.epub"
-            var pdArgs = string.IsNullOrEmpty(title)
-                ? $"{bookSrc} -o {Path.Combine(AppConsts.BuildPath, $"book.{format}")}"
-                : $"{bookSrc} -o {Path.Combine(AppConsts.BuildPath, $"{projTitle}.{format}")}";
+            var pdArgs = $" -o {Path.Combine(buildPath, $"book.{format}")} {bookSrc}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
@@ -149,6 +161,9 @@ namespace RyuBook
                 RedirectStandardOutput = true,
                 Arguments = pdArgs,
             };
+
+            if (Debugger.IsAttached)
+                Console.WriteLine(pdArgs);
 
             Process.Start(procInfo);
         }
