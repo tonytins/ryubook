@@ -38,10 +38,10 @@ namespace RyuBook
                 })
                 .WithParsed<InitOption>(o =>
                 {
-                    // If source directory exists, exit
-                    if (EnviromentCheck.IsSrcDirectory) return;
-
                     var srcDir = Path.Combine(o.Directory, "src");
+
+                    // If source directory exists, exit
+                    if (Directory.Exists(srcDir)) return;
 
                     // Files
                     var metadataFile = Path.Combine(srcDir, AppConsts.MetadateFile);
@@ -102,7 +102,7 @@ namespace RyuBook
                             var bookTitle = metaDateFile.First()
                             .Replace("title:\u0020", string.Empty);
 
-                            if (!EnviromentCheck.IsSrcDirAndPandoc) return;
+                            if (!PandocEnviroment.IfPandocExists && !Directory.Exists(srcDir)) return;
 
                             if (o.Format.Contains("doc", StringComparison.OrdinalIgnoreCase)
                                 || o.Format.Contains("docx", StringComparison.OrdinalIgnoreCase))
