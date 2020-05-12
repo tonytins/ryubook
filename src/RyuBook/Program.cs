@@ -25,7 +25,8 @@ namespace RyuBook
                          || fmt.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
                          || fmt.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
                          || fmt.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
-                         || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
+                         || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase)
+                         || fmt.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
 
                     foreach (var book in books)
                     {
@@ -105,6 +106,8 @@ namespace RyuBook
                                 GenerateBook(bookTitle, o.Directory, "html");
                             else if (o.Format.Contains("rtf", StringComparison.OrdinalIgnoreCase))
                                 GenerateBook(bookTitle, o.Directory, "rtf");
+                            else if (o.Format.Contains("pdf", StringComparison.OrdinalIgnoreCase))
+                                GenerateBook(bookTitle, o.Directory, "pdf");
                             else if (o.Format.Contains("all", StringComparison.OrdinalIgnoreCase))
                                 foreach (var fmt in allFmt)
                                     GenerateBook(bookTitle, o.Directory, fmt);
@@ -133,9 +136,9 @@ namespace RyuBook
 
             var allChapters = string.Empty;
             var listChapters = Directory.EnumerateFiles(srcPath)
-                .Where(fmt =>
-                    fmt.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
-                    || fmt.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase)).ToList();
+                .Where(fmt => fmt.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+                    || fmt.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             // Sort files in alphabetical order to avoid chapters being arranged in the wrong order
             listChapters.Sort();
@@ -146,7 +149,9 @@ namespace RyuBook
             var bookSrc = $"{Path.Combine(srcPath, AppConsts.MetadateFile)} {allChapters}";
 
             // If "title" is empty, output book in the respective file
-            var pdArgs = $"{bookSrc} -o {projTitle}.{format}";
+            var pdArgs = format.Contains("pdf")
+                ? $" {bookSrc} -t html -o {projTitle}.{format}" // Requires wkhtmltopdf
+                : $"{bookSrc} -o {projTitle}.{format}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
