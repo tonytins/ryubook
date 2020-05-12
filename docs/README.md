@@ -40,9 +40,12 @@ USAGE:
 FLAGS:
   -t, --title
   -f  --format
+  -d  --dir
 ```
 
-Using the ``build`` command alone will build the book as is and output ``book.epub``. If ``ryubook.toml`` is present or ``--title`` is used then name of your choice will be used. You can also build formats other then the default ``epub`` by passing `-f` or ``--format``.
+Using the ``build`` command alone will build the book as is and output ``book.epub``. You can also build formats other then the default ``epub`` by passing `-f` or ``--format``. In build, ``-d`` or ``--dir`` allows for building a book outside of the current directory.
+
+Note the book name is currently grabbed from the current or specified directory and not from ``title.txt``. This is a limitation in Ryubook and NOT Pandoc.
 
 ### Supported formats
 
@@ -64,17 +67,19 @@ USAGE:
 FLAGS:
   -t --title
   -a  --author
+  -d  --dir
 ```
 
-By passing ``-t`` or ``-a`` you can Ryubook will write metadata of the book to ``title.txt``.
+Init will create ``/src/title.txt``, ``/src/01-helloworld.md``, and a ``.gitignore``. By passing ``-t`` or ``-a`` Ryubook will write the title and author, respectfully, to the ``title.txt``. In Init, ``-d`` or ``--dir`` allows for creating a book project of the current directory.
 
 ### title.txt
 
 ```txt
-% Book Title
-% Author
+---
+title: Book Title
+author: Lorem Ipsum
+language: en-US
+---
 ```
 
-The book's metadata is contained in ``title.txt``. Title and author are on separate lines with a ``%`` before each word.
-
-
+The book's metadata is contained in ``title.txt`` and will be read by Pandoc. Ryubook assumes the language based on your relative location. In this example, it choose ``en-US`` because my native language is English and I live in the US.

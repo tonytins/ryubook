@@ -3,9 +3,9 @@ using System.IO;
 
 namespace RyuBook
 {
-    public struct EnviromentCheck
+    public struct PandocEnviroment
     {
-        static bool IsPandoc
+        public static bool IfPandocExists
         {
             get
             {
@@ -22,22 +22,6 @@ namespace RyuBook
                     return true;
                 }
                 catch { return false; }
-            }
-        }
-
-        public static bool IsSrcDirectory => Directory.Exists(AppConsts.SrcPath);
-
-        public static bool IsSrcDirAndPandoc
-        {
-            get
-            {
-                try
-                {
-                   return IsSrcDirectory && IsPandoc;
-
-                }
-                catch { return false; }
-
             }
         }
     }
