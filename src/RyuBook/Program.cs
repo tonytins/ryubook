@@ -66,7 +66,7 @@ namespace RyuBook
                         "---"
                     };
 
-                    var gitignore = new[] { "*.rtf", "*.odt", "*.html", "*.docx", "*.epub" };
+                    var gitignore = new[] { "*.rtf", "*.odt", "*.html", "*.docx", "*.epub", "*.pdf" };
 
                     Directory.CreateDirectory(srcDir);
                     File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), $"# Hello World{Environment.NewLine}");
@@ -75,12 +75,7 @@ namespace RyuBook
                 })
                 .WithParsed<BuildOption>(o =>
                 {
-                    var buildDir = Path.Combine(o.Directory, "build");
                     var srcDir = Path.Combine(o.Directory, "src");
-
-                    // If the /build directory doesn't exist, create it.
-                    if (!Directory.Exists(buildDir))
-                        Directory.CreateDirectory(buildDir);
 
                     var allFmt = new[] { "rtf", "odt", "html", "docx", "epub" };
 
@@ -96,7 +91,6 @@ namespace RyuBook
                     {
                         try
                         {
-                            var metaDateFile = File.ReadLines(Path.Combine(srcDir, AppConsts.MetadateFile));
                             var dirInfo = new DirectoryInfo(o.Directory);
                             var bookTitle = dirInfo.Name;
 
