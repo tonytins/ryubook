@@ -14,8 +14,7 @@ namespace RyuBook
             Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
                 .WithParsed<CleanOption>(o =>
                 {
-                    var buildDir = Path.Combine(o.Directory, "build");
-                    var books = Directory.EnumerateFiles(buildDir)
+                    var books = Directory.EnumerateFiles(o.Directory)
                         .Where(fmt => fmt.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
                         /*
                          * While .doc output may not be supported by Pandoc,
@@ -30,7 +29,7 @@ namespace RyuBook
 
                     foreach (var book in books)
                     {
-                        var path = Path.Combine(buildDir, book);
+                        var path = Path.Combine(o.Directory, book);
 
                         if (File.Exists(path))
                             File.Delete(path);
@@ -56,7 +55,7 @@ namespace RyuBook
                         : o.Title;
 
                     /*
-                     * It's easier (and more readable) to contruct the metadata out of an array
+                     * It's easier (and more readable) to construct the metadata out of an array
                      * because the content isn't very dense.
                      */
                     var metadata = new[] {
@@ -67,9 +66,12 @@ namespace RyuBook
                         "---"
                     };
 
+                    var gitignore = new[] { "*.rtf", "*.odt", "*.html", "*.docx", "*.epub" };
+
                     Directory.CreateDirectory(srcDir);
-                    File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), "# Your book");
+                    File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), $"# Hello World{Environment.NewLine}");
                     File.WriteAllLinesAsync(Path.Combine(srcDir, metadataFile), metadata);
+                    File.WriteAllLinesAsync(Path.Combine(o.Directory, ".gitignore"), gitignore);
                 })
                 .WithParsed<BuildOption>(o =>
                 {
@@ -84,23 +86,19 @@ namespace RyuBook
 
                     if (o.Format.Contains("list", StringComparison.OrdinalIgnoreCase))
                     {
-                        var fmts = string.Empty;
+                        var fmtAggregate = allFmt.Aggregate(string.Empty,
+                            (current, fmt) => current + $"{fmt}, ");
 
-                        foreach (var fmt in allFmt)
-                            fmts += $"{fmt}, ";
-
-                        var endComma = ", ";
-                        var fmtsList = fmts.TrimEnd(endComma.ToCharArray());
-
-                        Console.WriteLine($"These formats are supported: {fmtsList}.");
+                        const string endComma = ", ";
+                        Console.WriteLine($"These formats are supported: {fmtAggregate.TrimEnd(endComma.ToCharArray())}.");
                     }
                     else
                     {
                         try
                         {
                             var metaDateFile = File.ReadLines(Path.Combine(srcDir, AppConsts.MetadateFile));
-                            var bookTitle = metaDateFile.First()
-                            .Replace("title:\u0020", string.Empty);
+                            var dirInfo = new DirectoryInfo(o.Directory);
+                            var bookTitle = dirInfo.Name;
 
                             if (!PandocEnviroment.IfPandocExists && !Directory.Exists(srcDir)) return;
 
@@ -121,10 +119,9 @@ namespace RyuBook
                         }
                         catch (IOException err)
                         {
-                            if (Debugger.IsAttached)
-                                Console.WriteLine($"{err.Message}{Environment.NewLine}{err.StackTrace}");
-                            else
-                                Console.WriteLine(err.Message);
+                            Console.WriteLine(Debugger.IsAttached
+                                ? $"{err.Message}{Environment.NewLine}{err.StackTrace}"
+                                : err.Message);
                         }
                     }
 
@@ -134,25 +131,28 @@ namespace RyuBook
         static void GenerateBook(string title, string dir, string format = "epub")
         {
             var srcPath = Path.Combine(dir, "src");
-            var buildPath = Path.Combine(dir, "buid");
-            var allChapters = string.Empty;
-            var listChapters = Directory.EnumerateFiles(srcPath)
-                .Where(fmt =>
-                fmt.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
-                || fmt.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase));
-
-            foreach (var chapter in listChapters)
-                allChapters += @$" {Path.Combine(srcPath, chapter)} ";
 
             // Remove whitespace and make all letters lowercase
             var projTitle = title
                 .Replace("\u0020", string.Empty)
                 .ToLowerInvariant();
 
+            var allChapters = string.Empty;
+            var listChapters = Directory.EnumerateFiles(srcPath)
+                .Where(fmt =>
+                    fmt.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+                    || fmt.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            // Sort files in alphabetical order to avoid chapters being arranged in the wrong order
+            listChapters.Sort();
+
+            allChapters = listChapters.Aggregate(allChapters,
+                (current, chapter) => current + @$" {Path.Combine(srcPath, chapter)} ");
+
             var bookSrc = $"{Path.Combine(srcPath, AppConsts.MetadateFile)} {allChapters}";
 
-            // If "title" is empty, output "book.epub"
-            var pdArgs = $" -o {Path.Combine(buildPath, $"book.{format}")} {bookSrc}";
+            // If "title" is empty, output book in the respective file
+            var pdArgs = $"{bookSrc} -o {projTitle}.{format}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
