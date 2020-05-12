@@ -149,9 +149,13 @@ namespace RyuBook
             var bookSrc = $"{Path.Combine(srcPath, AppConsts.MetadateFile)} {allChapters}";
 
             // If "title" is empty, output book in the respective file
-            var pdArgs = format.Contains("pdf")
-                ? $" {bookSrc} -t html -o {projTitle}.{format}" // Requires wkhtmltopdf
-                : $"{bookSrc} -o {projTitle}.{format}";
+            var pdArgs = $"{bookSrc} --strip-comments -o {projTitle}.{format}";
+
+            if (format.Contains("pdf"))
+                pdArgs = $" {bookSrc} -t html --strip-comments --toc -o {projTitle}.{format}";
+
+            if (format.Contains("epub"))
+                pdArgs = $"{bookSrc} --strip-comments --toc -o {projTitle}.{format}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
