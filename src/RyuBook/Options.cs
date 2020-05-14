@@ -13,6 +13,7 @@ namespace RyuBook
     {
         [Option('t', "title")] public string Title { get; set; } = string.Empty;
         [Option('f', "format")] public string Format { get; set; } = string.Empty;
+        [Option('v', "verbose")] public bool Verbose { get; set; } = false;
     }
 
     [Verb("clean", HelpText = "Removes all books in the /build directory.")]

@@ -99,20 +99,20 @@ namespace RyuBook
 
                             if (o.Format.Contains("doc", StringComparison.OrdinalIgnoreCase)
                                 || o.Format.Contains("docx", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, o.Directory, "docx");
+                                GenerateBook(bookTitle, o.Directory, "docx", o.Verbose);
                             else if (o.Format.Contains("odt", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, o.Directory, "odt");
+                                GenerateBook(bookTitle, o.Directory, "odt", o.Verbose);
                             else if (o.Format.Contains("html", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, o.Directory, "html");
+                                GenerateBook(bookTitle, o.Directory, "html", o.Verbose);
                             else if (o.Format.Contains("rtf", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, o.Directory, "rtf");
+                                GenerateBook(bookTitle, o.Directory, "rtf", o.Verbose);
                             else if (o.Format.Contains("pdf", StringComparison.OrdinalIgnoreCase))
-                                GenerateBook(bookTitle, o.Directory, "pdf");
+                                GenerateBook(bookTitle, o.Directory, "pdf", o.Verbose);
                             else if (o.Format.Contains("all", StringComparison.OrdinalIgnoreCase))
                                 foreach (var fmt in allFmt)
-                                    GenerateBook(bookTitle, o.Directory, fmt);
+                                    GenerateBook(bookTitle, o.Directory, fmt, o.Verbose);
                             else
-                                GenerateBook(bookTitle, o.Directory);
+                                GenerateBook(bookTitle, o.Directory, verbose: o.Verbose);
                         }
                         catch (IOException err)
                         {
@@ -125,7 +125,7 @@ namespace RyuBook
                 });
         }
 
-        static void GenerateBook(string title, string dir, string format = "epub")
+        static void GenerateBook(string title, string dir, string format = "epub", bool verbose = false)
         {
             var srcPath = Path.Combine(dir, "src");
 
@@ -165,8 +165,8 @@ namespace RyuBook
                 Arguments = pdArgs,
             };
 
-            if (Debugger.IsAttached)
-                Console.WriteLine(pdArgs);
+            if (Debugger.IsAttached || verbose)
+                Console.WriteLine($"pandoc {pdArgs}");
 
             Process.Start(procInfo);
         }
