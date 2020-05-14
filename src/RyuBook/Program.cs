@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -9,6 +9,7 @@ namespace RyuBook
 {
     internal static class Program
     {
+        static readonly Random _rnd = new Random();
         static void Main(string[] args)
         {
             Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
@@ -41,7 +42,8 @@ namespace RyuBook
                     var srcDir = Path.Combine(o.Directory, "src");
 
                     // If source directory exists, exit
-                    if (Directory.Exists(srcDir)) return;
+                    if (Directory.Exists(srcDir))
+                        return;
 
                     // Files
                     var metadataFile = Path.Combine(srcDir, AppConsts.MetadateFile);
@@ -67,7 +69,7 @@ namespace RyuBook
                         "---"
                     };
 
-                    var gitignore = new[] { "*.rtf", "*.odt", "*.html", "*.docx", "*.epub", "*.pdf" };
+                    var gitignore = new[] { "*.rtf", "*.odt", "*.html", "*.doc[x]", "*.epub", "*.pdf" };
 
                     Directory.CreateDirectory(srcDir);
                     File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), $"# Hello World{Environment.NewLine}");
@@ -78,12 +80,12 @@ namespace RyuBook
                 {
                     var srcDir = Path.Combine(o.Directory, "src");
 
-                    var allFmt = new[] { "rtf", "odt", "html", "docx", "epub" };
+                    var allFmt = new[] { "rtf", "odt", "html", "docx", "epub", "pdf" };
 
                     if (o.Format.Contains("list", StringComparison.OrdinalIgnoreCase))
                     {
-                        var fmtAggregate = allFmt.Aggregate(string.Empty,
-                            (current, fmt) => current + $"{fmt}, ");
+                        var fmtAggregate = allFmt.OrderBy(r => _rnd.Next(allFmt.Length))
+                        .Aggregate(string.Empty, (current, fmt) => current + $"{fmt}, ");
 
                         const string endComma = ", ";
                         Console.WriteLine($"These formats are supported: {fmtAggregate.TrimEnd(endComma.ToCharArray())}.");
@@ -95,7 +97,8 @@ namespace RyuBook
                             var dirInfo = new DirectoryInfo(o.Directory);
                             var bookTitle = dirInfo.Name;
 
-                            if (!PandocEnviroment.IfPandocExists && !Directory.Exists(srcDir)) return;
+                            if (!PandocEnviroment.IfPandocExists && !Directory.Exists(srcDir))
+                                return;
 
                             if (o.Format.Contains("doc", StringComparison.OrdinalIgnoreCase)
                                 || o.Format.Contains("docx", StringComparison.OrdinalIgnoreCase))
@@ -149,24 +152,24 @@ namespace RyuBook
             var bookSrc = $"{Path.Combine(srcPath, AppConsts.MetadateFile)} {allChapters}";
 
             // If "title" is empty, output book in the respective file
-            var pdArgs = $"{bookSrc} --strip-comments -o {projTitle}.{format}";
+            var args = $"{bookSrc} --strip-comments -o {projTitle}.{format}";
 
             if (format.Contains("pdf"))
-                pdArgs = $" {bookSrc} -t html --strip-comments --toc -o {projTitle}.{format}";
+                args = $" {bookSrc} -t html --strip-comments --toc -o {projTitle}.{format}";
 
             if (format.Contains("epub"))
-                pdArgs = $"{bookSrc} --strip-comments --toc -o {projTitle}.{format}";
+                args = $"{bookSrc} --strip-comments --toc -o {projTitle}.{format}";
 
             var procInfo = new ProcessStartInfo("pandoc")
             {
                 WindowStyle = ProcessWindowStyle.Minimized,
                 UseShellExecute = false,
-                RedirectStandardOutput = true,
-                Arguments = pdArgs,
+                RedirectStandardOutput = false,
+                Arguments = args,
             };
 
             if (Debugger.IsAttached || verbose)
-                Console.WriteLine($"pandoc {pdArgs}");
+                Console.WriteLine($"pandoc {args}");
 
             Process.Start(procInfo);
         }
