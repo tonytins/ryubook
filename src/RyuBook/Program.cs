@@ -72,7 +72,7 @@ namespace RyuBook
                     var gitignore = new[] { "*.rtf", "*.odt", "*.html", "*.doc[x]", "*.epub", "*.pdf" };
 
                     Directory.CreateDirectory(srcDir);
-                    File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), $"# Hello World{Environment.NewLine}");
+                    File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), $"# Chapter 1{Environment.NewLine}");
                     File.WriteAllLinesAsync(Path.Combine(srcDir, metadataFile), metadata);
                     File.WriteAllLinesAsync(Path.Combine(o.Directory, ".gitignore"), gitignore);
 
