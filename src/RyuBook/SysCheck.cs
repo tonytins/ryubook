@@ -1,9 +1,8 @@
 using System.Diagnostics;
-using System.IO;
 
 namespace RyuBook
 {
-    public struct PandocEnviroment
+    public struct SysCheck
     {
         public static bool IfPandocExists
         {
@@ -17,6 +16,26 @@ namespace RyuBook
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         Arguments = "-v"
+                    };
+                    Process.Start(pd);
+                    return true;
+                }
+                catch { return false; }
+            }
+        }
+
+        public static bool IfGitExists
+        {
+            get
+            {
+                try
+                {
+                    var pd = new ProcessStartInfo("git")
+                    {
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        Arguments = "--version"
                     };
                     Process.Start(pd);
                     return true;

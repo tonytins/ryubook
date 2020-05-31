@@ -75,6 +75,18 @@ namespace RyuBook
                     File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), $"# Hello World{Environment.NewLine}");
                     File.WriteAllLinesAsync(Path.Combine(srcDir, metadataFile), metadata);
                     File.WriteAllLinesAsync(Path.Combine(o.Directory, ".gitignore"), gitignore);
+
+                    if (SysCheck.IfGitExists)
+                    {
+                        var pd = new ProcessStartInfo("git")
+                        {
+                            WindowStyle = ProcessWindowStyle.Minimized,
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            Arguments = "init"
+                        };
+                        Process.Start(pd);
+                    }
                 })
                 .WithParsed<BuildOption>(o =>
                 {
@@ -97,7 +109,7 @@ namespace RyuBook
                             var dirInfo = new DirectoryInfo(o.Directory);
                             var bookTitle = dirInfo.Name;
 
-                            if (!PandocEnviroment.IfPandocExists && !Directory.Exists(srcDir))
+                            if (!SysCheck.IfPandocExists && !Directory.Exists(srcDir))
                                 return;
 
                             if (o.Format.Contains("doc", StringComparison.OrdinalIgnoreCase)
