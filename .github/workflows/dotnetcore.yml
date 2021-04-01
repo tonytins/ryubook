@@ -1,22 +1,22 @@
-name: .NET Core
+name: .NET
 
 on:
     push:
-        branches: [master]
+        branches: [develop, master, main, "feature/**"]
     pull_request:
-        branches: [master]
+        branches: [develop, master, main, "feature/**"]
 
 jobs:
     build:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                dotnet: ["3.1.200", "3.1.201"]
+                dotnet: ["5.0.x", "6.0.x"]
                 os: [ubuntu-latest, windows-latest, macOS-latest]
 
         steps:
             - uses: actions/checkout@v2
-            - name: Setup .NET Core
+            - name: Setup .NET
               uses: actions/setup-dotnet@v1
               with:
                   dotnet-version: ${{ matrix.dotnet }}
