@@ -4,7 +4,7 @@ namespace RyuBook
 {
     public struct SysCheck
     {
-        public static bool IfPandocExists
+        public static bool IsPandoc
         {
             get
             {
@@ -24,7 +24,7 @@ namespace RyuBook
             }
         }
 
-        public static bool IfGitExists
+        public static bool IsGit
         {
             get
             {

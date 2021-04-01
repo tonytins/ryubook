@@ -4,6 +4,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using CommandLine;
+using RyuBook.Interface;
+using RyuBook.Models;
 
 namespace RyuBook
 {
@@ -12,32 +14,29 @@ namespace RyuBook
         static readonly Random _rnd = new Random();
         static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
-                .WithParsed<CleanOption>(o =>
+            Parser.Default.ParseArguments<InitOption, BuildOption>(args)
+                /* .WithParsed<CleanOption>(o =>
                 {
+                    // While .doc output may not be supported by Pandoc,
+                    // .docx can still be converted to .doc using other programs,
+                    // such as LibreOffice.
                     var books = Directory.EnumerateFiles(o.Directory)
                         .Where(fmt => fmt.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
-                        /*
-                         * While .doc output may not be supported by Pandoc,
-                         * .docx can still be converted to .doc using other programs,
-                         * such as LibreOffice.
-                         */
-                         || fmt.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
-                         || fmt.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
-                         || fmt.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
-                         || fmt.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
-                         || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase)
-                         || fmt.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
+                                      || fmt.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
+                                      || fmt.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
+                                      || fmt.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
+                                      || fmt.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
+                                      || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase)
+                                      || fmt.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
 
                     foreach (var book in books)
                     {
                         var path = Path.Combine(o.Directory, book);
 
-                        if (File.Exists(path))
-                            File.Delete(path);
+                        if (File.Exists(path)) File.Delete(path);
                     }
-                })
-                .WithParsed<InitOption>(o =>
+                }) */
+                .WithParsed<IProject>(o =>
                 {
                     var srcDir = Path.Combine(o.Directory, "src");
 
@@ -46,8 +45,8 @@ namespace RyuBook
                         return;
 
                     // Files
-                    var metadataFile = Path.Combine(srcDir, AppConsts.MetadateFile);
-                    var firstChapterFile = Path.Combine(srcDir, AppConsts.FirstChapterFile);
+                    var metadataFile = Path.Combine(srcDir, ProjectFiles.MetadateFile);
+                    var firstChapterFile = Path.Combine(srcDir, ProjectFiles.FirstChapterFile);
 
                     // Metadata
                     var projAuthor = string.IsNullOrEmpty(o.Author)
@@ -57,10 +56,8 @@ namespace RyuBook
                         ? "Book Title"
                         : o.Title;
 
-                    /*
-                     * It's easier (and more readable) to construct the metadata out of an array
-                     * because the content isn't very dense.
-                     */
+                     // It's easier (and more readable) to construct the metadata out of an array
+                     // because the content isn't very dense.
                     var metadata = new[] {
                         $"---",
                         $"title: {projTitle}",
@@ -76,19 +73,17 @@ namespace RyuBook
                     File.WriteAllLinesAsync(Path.Combine(srcDir, metadataFile), metadata);
                     File.WriteAllLinesAsync(Path.Combine(o.Directory, ".gitignore"), gitignore);
 
-                    if (SysCheck.IfGitExists)
+                    if (!SysCheck.IsGit) return;
+                    var git = new ProcessStartInfo("git")
                     {
-                        var pd = new ProcessStartInfo("git")
-                        {
-                            WindowStyle = ProcessWindowStyle.Minimized,
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                            Arguments = "init"
-                        };
-                        Process.Start(pd);
-                    }
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        Arguments = "init"
+                    };
+                    Process.Start(git);
                 })
-                .WithParsed<BuildOption>(o =>
+                .WithParsed<IBuild>(o =>
                 {
                     var srcDir = Path.Combine(o.Directory, "src");
 
@@ -97,7 +92,7 @@ namespace RyuBook
                     if (o.Format.Contains("list", StringComparison.OrdinalIgnoreCase))
                     {
                         var fmtAggregate = allFmt.OrderBy(r => _rnd.Next(allFmt.Length))
-                        .Aggregate(string.Empty, (current, fmt) => current + $"{fmt}, ");
+                            .Aggregate(string.Empty, (current, fmt) => current + $"{fmt}, ");
 
                         const string endComma = ", ";
                         Console.WriteLine($"These formats are supported: {fmtAggregate.TrimEnd(endComma.ToCharArray())}.");
@@ -109,7 +104,7 @@ namespace RyuBook
                             var dirInfo = new DirectoryInfo(o.Directory);
                             var bookTitle = dirInfo.Name;
 
-                            if (!SysCheck.IfPandocExists && !Directory.Exists(srcDir))
+                            if (!SysCheck.IsPandoc && !Directory.Exists(srcDir))
                                 return;
 
                             if (o.Format.Contains("doc", StringComparison.OrdinalIgnoreCase)
@@ -142,15 +137,15 @@ namespace RyuBook
 
         static void GenerateBook(string title, string dir, string format = "epub", bool verbose = false)
         {
-            var srcPath = Path.Combine(dir, "src");
+            var path = Path.Combine(dir, "src");
 
             // Remove whitespace and make all letters lowercase
             var projTitle = title
                 .Replace("\u0020", string.Empty)
                 .ToLowerInvariant();
 
-            var allChapters = string.Empty;
-            var listChapters = Directory.EnumerateFiles(srcPath)
+            var chapters = string.Empty;
+            var listChapters = Directory.EnumerateFiles(path)
                 .Where(fmt => fmt.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
                     || fmt.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -158,21 +153,21 @@ namespace RyuBook
             // Sort files in alphabetical order to avoid chapters being arranged in the wrong order
             listChapters.Sort();
 
-            allChapters = listChapters.Aggregate(allChapters,
-                (current, chapter) => current + @$" {Path.Combine(srcPath, chapter)} ");
+            chapters = listChapters.Aggregate(chapters,
+                (current, chapter) => @$"{current} {Path.Combine(path, chapter)}");
 
-            var bookSrc = $"{Path.Combine(srcPath, AppConsts.MetadateFile)} {allChapters}";
+            var src = $"{Path.Combine(path, ProjectFiles.MetadateFile)} {chapters}";
 
             // If "title" is empty, output book in the respective file
-            var args = $"{bookSrc} --strip-comments -o {projTitle}.{format}";
+            var args = $"{src} --strip-comments -o {projTitle}.{format}";
 
             if (format.Contains("pdf"))
-                args = $" {bookSrc} -t html --strip-comments --toc -o {projTitle}.{format}";
+                args = $" {src} -t html --strip-comments --toc -o {projTitle}.{format}";
 
             if (format.Contains("epub"))
-                args = $"{bookSrc} --strip-comments --toc -o {projTitle}.{format}";
+                args = $"{src} --strip-comments --toc -o {projTitle}.{format}";
 
-            var procInfo = new ProcessStartInfo("pandoc")
+            var pandoc = new ProcessStartInfo("pandoc")
             {
                 WindowStyle = ProcessWindowStyle.Minimized,
                 UseShellExecute = false,
@@ -183,7 +178,7 @@ namespace RyuBook
             if (Debugger.IsAttached || verbose)
                 Console.WriteLine($"pandoc {args}");
 
-            Process.Start(procInfo);
+            Process.Start(pandoc);
         }
     }
 }
