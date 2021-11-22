@@ -1,47 +1,44 @@
-using System.Diagnostics;
+namespace RyuBook;
 
-namespace RyuBook
+public struct SysCheck
 {
-    public struct SysCheck
+    public static bool IfPandocExists
     {
-        public static bool IfPandocExists
+        get
         {
-            get
+            try
             {
-                try
+                var pd = new ProcessStartInfo("pandoc")
                 {
-                    var pd = new ProcessStartInfo("pandoc")
-                    {
-                        WindowStyle = ProcessWindowStyle.Minimized,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        Arguments = "-v"
-                    };
-                    Process.Start(pd);
-                    return true;
-                }
-                catch { return false; }
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    Arguments = "-v"
+                };
+                Process.Start(pd);
+                return true;
             }
+            catch { return false; }
         }
+    }
 
-        public static bool IfGitExists
+    public static bool IfGitExists
+    {
+        get
         {
-            get
+            try
             {
-                try
+                var pd = new ProcessStartInfo("git")
                 {
-                    var pd = new ProcessStartInfo("git")
-                    {
-                        WindowStyle = ProcessWindowStyle.Minimized,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        Arguments = "--version"
-                    };
-                    Process.Start(pd);
-                    return true;
-                }
-                catch { return false; }
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    Arguments = "--version"
+                };
+                Process.Start(pd);
+                return true;
             }
+            catch { return false; }
         }
     }
 }
