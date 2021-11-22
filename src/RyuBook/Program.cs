@@ -1,4 +1,6 @@
 using System.Globalization;
+using RyuBook.Interface;
+using RyuBook.Models;
 
 namespace RyuBook;
 
@@ -6,10 +8,10 @@ static class Program
 {
     static readonly Random _rnd = new();
 
-    static void Main(string[] args) => Parser.Default.ParseArguments<InitOption, BuildOption, CleanOption>(args)
-            .WithParsed<CleanOption>(o =>
+    static void Main(string[] args) => Parser.Default.ParseArguments<IBuildOptions, IBookOptions, IGenerateOptions>(args)
+            .WithParsed<CleanOption>(options =>
             {
-                var books = Directory.EnumerateFiles(o.Directory)
+                var books = Directory.EnumerateFiles(options.Folder)
                     .Where(fmt => fmt.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
                      /*
                       * While .doc output may not be supported by Pandoc,
@@ -25,15 +27,15 @@ static class Program
 
                 foreach (var book in books)
                 {
-                    var path = Path.Combine(o.Directory, book);
+                    var path = Path.Combine(options.Folder, book);
 
                     if (File.Exists(path))
                         File.Delete(path);
                 }
             })
-            .WithParsed<InitOption>(o =>
+            .WithParsed<InitOption>(options =>
             {
-                var srcDir = Path.Combine(o.Directory, "src");
+                var srcDir = Path.Combine(options.Folder, "src");
 
                 // If source directory exists, exit
                 if (Directory.Exists(srcDir))
@@ -44,12 +46,12 @@ static class Program
                 var firstChapterFile = Path.Combine(srcDir, AppConsts.FirstChapterFile);
 
                 // Metadata
-                var projAuthor = string.IsNullOrEmpty(o.Author)
+                var projAuthor = string.IsNullOrEmpty(options.Author)
                 ? "Lorem Ipsum"
-                : o.Author;
-                var projTitle = string.IsNullOrEmpty(o.Author)
+                : options.Author;
+                var projTitle = string.IsNullOrEmpty(options.Author)
                     ? "Book Title"
-                    : o.Title;
+                    : options.Title;
 
                 /*
                  * It's easier (and more readable) to construct the metadata out of an array
@@ -68,7 +70,7 @@ static class Program
                 Directory.CreateDirectory(srcDir);
                 File.WriteAllTextAsync(Path.Combine(srcDir, firstChapterFile), $"# Chapter 1{Environment.NewLine}");
                 File.WriteAllLinesAsync(Path.Combine(srcDir, metadataFile), metadata);
-                File.WriteAllLinesAsync(Path.Combine(o.Directory, ".gitignore"), gitignore);
+                File.WriteAllLinesAsync(Path.Combine(options.Folder, ".gitignore"), gitignore);
 
                 if (SysCheck.IfGitExists)
                 {
@@ -82,13 +84,13 @@ static class Program
                     Process.Start(pd);
                 }
             })
-            .WithParsed<BuildOption>(o =>
+            .WithParsed<BuildOption>(build =>
             {
-                var srcDirectory = Path.Combine(o.Directory, "src");
+                var srcDirectory = Path.Combine(build.Folder, "src");
 
                 var allFormats = new[] { "rtf", "odt", "html", "docx", "epub", "pdf" };
 
-                if (o.Format.Contains("list", StringComparison.OrdinalIgnoreCase))
+                if (build.Format.Contains("list", StringComparison.OrdinalIgnoreCase))
                 {
                     var fmtAggregate = allFormats.OrderBy(r => _rnd.Next(allFormats.Length))
                     .Aggregate(string.Empty, (current, fmt) => current + $"{fmt}, ");
@@ -100,28 +102,14 @@ static class Program
                 {
                     try
                     {
-                        var dirInfo = new DirectoryInfo(o.Directory);
+                        var dirInfo = new DirectoryInfo(build.Folder);
                         var bookTitle = dirInfo.Name;
 
                         if (!SysCheck.IfPandocExists && !Directory.Exists(srcDirectory))
                             return;
 
-                        if (o.Format.Contains("doc", StringComparison.OrdinalIgnoreCase)
-                            || o.Format.Contains("docx", StringComparison.OrdinalIgnoreCase))
-                            Generator.Export(bookTitle, o.Directory, "docx", o.Verbose);
-                        else if (o.Format.Contains("odt", StringComparison.OrdinalIgnoreCase))
-                            Generator.Export(bookTitle, o.Directory, "odt", o.Verbose);
-                        else if (o.Format.Contains("html", StringComparison.OrdinalIgnoreCase))
-                            Generator.Export(bookTitle, o.Directory, "html", o.Verbose);
-                        else if (o.Format.Contains("rtf", StringComparison.OrdinalIgnoreCase))
-                            Generator.Export(bookTitle, o.Directory, "rtf", o.Verbose);
-                        else if (o.Format.Contains("pdf", StringComparison.OrdinalIgnoreCase))
-                            Generator.Export(bookTitle, o.Directory, "pdf", o.Verbose);
-                        else if (o.Format.Contains("all", StringComparison.OrdinalIgnoreCase))
-                            foreach (var fmt in allFormats)
-                                Generator.Export(bookTitle, o.Directory, fmt, o.Verbose);
-                        else
-                            Generator.Export(bookTitle, o.Directory, verbose: o.Verbose);
+                        Generator.Export(build);
+
                     }
                     catch (IOException err)
                     {

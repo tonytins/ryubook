@@ -1,13 +1,15 @@
+using RyuBook.Interface;
+
 namespace RyuBook;
 
 public static class Generator
 {
-    public static void Export(string title, string dir, string format = "epub", bool verbose = false)
+    public static void Export(IGenerateOptions gen)
     {
-        var srcPath = Path.Combine(dir, "src");
+        var srcPath = Path.Combine(gen.Folder, "src");
 
         // Remove whitespace and make all letters lowercase
-        var projTitle = title
+        var projTitle = gen.Title
             .Replace("\u0020", string.Empty)
             .ToLowerInvariant();
 
@@ -26,13 +28,13 @@ public static class Generator
         var bookSrc = $"{Path.Combine(srcPath, AppConsts.MetadateFile)} {allChapters}";
 
         // If "title" is empty, output book in the respective file
-        var args = $"{bookSrc} --strip-comments -o {projTitle}.{format}";
+        var args = $"{bookSrc} --strip-comments -o {projTitle}.{gen.Format}";
 
-        if (format.Contains("pdf"))
-            args = $" {bookSrc} -t html --strip-comments --toc -o {projTitle}.{format}";
+        if (gen.Format.Contains("pdf"))
+            args = $" {bookSrc} -t html --strip-comments --toc -o {projTitle}.{gen.Format}";
 
-        if (format.Contains("epub"))
-            args = $"{bookSrc} --strip-comments --toc -o {projTitle}.{format}";
+        if (gen.Format.Contains("epub"))
+            args = $"{bookSrc} --strip-comments --toc -o {projTitle}.{gen.Format}";
 
         var procInfo = new ProcessStartInfo("pandoc")
         {
@@ -42,7 +44,7 @@ public static class Generator
             Arguments = args,
         };
 
-        if (Debugger.IsAttached || verbose)
+        if (Debugger.IsAttached || gen.Verbose)
             Console.WriteLine($"pandoc {args}");
 
         Process.Start(procInfo);
