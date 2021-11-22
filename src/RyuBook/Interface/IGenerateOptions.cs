@@ -2,7 +2,7 @@ using System;
 
 namespace RyuBook.Interface;
 
-public interface IGenerateOptions : IBookOptions, IBuildOptions, IOptions
+public interface IGenerateOptions : IBookOptions, IBuildOptions
 {
 }
 

@@ -25,10 +25,14 @@ public static class Generator
         allChapters = listChapters.Aggregate(allChapters,
             (current, chapter) => current + @$" {Path.Combine(srcPath, chapter)} ");
 
-        var bookSrc = $"{Path.Combine(srcPath, AppConsts.MetadateFile)} {allChapters}";
+        var bookSrc = $"{Path.Combine(srcPath, AppCommon.MetadateFile)} {allChapters}";
 
         // If "title" is empty, output book in the respective file
         var args = $"{bookSrc} --strip-comments -o {projTitle}.{gen.Format}";
+
+        // Pandoc doesn't support the legacy DOC format
+        if (gen.Format.Contains("doc"))
+            gen.Format = "docx";
 
         if (gen.Format.Contains("pdf"))
             args = $" {bookSrc} -t html --strip-comments --toc -o {projTitle}.{gen.Format}";
@@ -47,7 +51,8 @@ public static class Generator
         if (Debugger.IsAttached || gen.Verbose)
             Console.WriteLine($"pandoc {args}");
 
-        Process.Start(procInfo);
+        if (AppCommon.Supported.Contains(gen.Format))
+            Process.Start(procInfo);
     }
 }
 

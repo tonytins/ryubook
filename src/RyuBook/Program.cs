@@ -42,8 +42,8 @@ static class Program
                     return;
 
                 // Files
-                var metadataFile = Path.Combine(srcDir, AppConsts.MetadateFile);
-                var firstChapterFile = Path.Combine(srcDir, AppConsts.FirstChapterFile);
+                var metadataFile = Path.Combine(srcDir, AppCommon.MetadateFile);
+                var firstChapterFile = Path.Combine(srcDir, AppCommon.FirstChapterFile);
 
                 // Metadata
                 var projAuthor = string.IsNullOrEmpty(options.Author)
@@ -88,11 +88,9 @@ static class Program
             {
                 var srcDirectory = Path.Combine(build.Folder, "src");
 
-                var allFormats = new[] { "rtf", "odt", "html", "docx", "epub", "pdf" };
-
                 if (build.Format.Contains("list", StringComparison.OrdinalIgnoreCase))
                 {
-                    var fmtAggregate = allFormats.OrderBy(r => _rnd.Next(allFormats.Length))
+                    var fmtAggregate = AppCommon.Supported.OrderBy(r => _rnd.Next(AppCommon.Supported.ToArray().Length))
                     .Aggregate(string.Empty, (current, fmt) => current + $"{fmt}, ");
 
                     const string endComma = ", ";
