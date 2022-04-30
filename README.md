@@ -18,10 +18,6 @@ SUBCOMMANDS:
   version    Display version information.
 ```
 
-## Building
-
-To easily build as a self-contained standalone executable, use the ``publish.sh`` or ``publish.ps1`` scripts.
-
 ## License
 
-This project is licensed under the MPL 2.0 license - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the BSD 3-Clause license - see the [LICENSE](LICENSE) file for details.
