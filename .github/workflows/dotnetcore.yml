@@ -1,26 +1,26 @@
-# name: .NET
+name: .NET
 
-# on:
-#     push:
-#         branches: [develop, master, main, "feature/**", "patch/**"]
-#     pull_request:
-#         branches: [develop, master, main, "feature/**", "patch/**"]
+on:
+    push:
+        branches: [develop, master, main, "feature/**", "patch/**"]
+    pull_request:
+        branches: [develop, master, main, "feature/**", "patch/**"]
 
-# jobs:
-#     build:
-#         runs-on: ${{ matrix.os }}
-#         strategy:
-#             matrix:
-#                 dotnet: ["6.0.x"]
-#                 os: [ubuntu-latest, windows-latest, macOS-latest]
+jobs:
+    build:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                dotnet: ["6.0.x"]
+                os: [ubuntu-latest, windows-latest, macOS-latest]
 
-#         steps:
-#             - uses: actions/checkout@v2
-#             - name: Setup .NET
-#               uses: actions/setup-dotnet@v1
-#               with:
-#                   dotnet-version: ${{ matrix.dotnet }}
-#             - name: Install dependencies
-#               run: dotnet restore src
-#             - name: Build
-#               run: dotnet build src --configuration Release --no-restore
+        steps:
+            - uses: actions/checkout@v2
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v1
+              with:
+                  dotnet-version: ${{ matrix.dotnet }}
+            - name: Install dependencies
+              run: dotnet restore src
+            - name: Build
+              run: dotnet build src --configuration Release --no-restore
