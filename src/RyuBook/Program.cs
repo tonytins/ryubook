@@ -1,3 +1,4 @@
+using System.Diagnostics;
 // This project is licensed under the BSD 3-Clause license.
 // See the LICENSE file in the project root for more information.
 using System.Globalization;
@@ -7,22 +8,44 @@ using RyuBook.Models;
 
 Random rnd = new();
 
-Parser.Default.ParseArguments<IBuildOptions, IBookOptions, IGenerateOptions>(args)
+Parser.Default.ParseArguments<IDebugOption, IBuildOptions, IBookOptions, IGenerateOptions>(args)
+    .WithParsed<DetectOption>(opts =>
+    {
+        var check = new ProcessStartInfo("pandoc")
+        {
+            WindowStyle = ProcessWindowStyle.Minimized,
+            UseShellExecute = false,
+            RedirectStandardOutput = false,
+            Arguments = "--version",
+        };
+
+        var process = Process.Start(check);
+
+        if (Debugger.IsAttached || opts.Verbose && process != null)
+            Console.WriteLine($"pandoc {check.Arguments}");
+
+        // If the process exits with a non-zero exit code, 
+        // then pandoc is not installed.
+        if (process.ExitCode != Environment.ExitCode)
+            Console.WriteLine("pandoc is not installed.");
+        else
+            Console.WriteLine($"pandoc is installed.");
+    })
     .WithParsed<CleanOption>(options =>
     {
         var books = Directory.EnumerateFiles(options.Folder)
             .Where(fmt => fmt.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)
-                          /*
-                           * While .doc output may not be supported by Pandoc,
-                           * .docx can still be converted to .doc using other programs,
-                           * such as LibreOffice.
-                           */
-                          || fmt.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
-                          || fmt.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
-                          || fmt.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
-                          || fmt.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
-                          || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase)
-                          || fmt.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
+            /*
+             * While .doc output may not be supported by Pandoc,
+             * .docx can still be converted to .doc using other programs,
+             * such as LibreOffice.
+             */
+            || fmt.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)
+            || fmt.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)
+            || fmt.EndsWith(".odt", StringComparison.OrdinalIgnoreCase)
+            || fmt.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)
+            || fmt.EndsWith(".html", StringComparison.OrdinalIgnoreCase)
+            || fmt.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
 
         foreach (var book in books)
         {

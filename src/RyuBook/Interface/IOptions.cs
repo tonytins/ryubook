@@ -17,6 +17,11 @@ public interface IBookOptions : IOptions
     string Author { get; set; }
 }
 
+public interface IDebugOption
+{
+    bool Verbose { get; set; }
+}
+
 public interface IGenerateOptions : IBookOptions, IBuildOptions
 {
 }

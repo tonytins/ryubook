@@ -1,6 +1,9 @@
 # RyuBook
 
+[![GitHub license](https://img.shields.io/github/license/tonytins/ryubook)](https://github.com/tonytins/ryubook/blob/main/LICENSE)
+
 RyuBook is a ePub generator based on .NET. It uses [Markdown](https://daringfireball.net/projects/markdown/syntax) as a source and [Pandoc](https://pandoc.org/) for generation.
+
 ## Usage
 
 ```txt

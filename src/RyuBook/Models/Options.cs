@@ -25,3 +25,9 @@ class InitOption : BaseOptions, IBookOptions
     [Option('a', "author")] public string Author { get; set; } = string.Empty;
     [Option('t', "title")] public string Title { get; set; } = string.Empty;
 }
+
+[Verb("detect", HelpText = "Detects if pandoc is installed.")]
+class DetectOption : IDebugOption
+{
+    [Option('v', "verbose")] public bool Verbose { get; set; } = false;
+}
