@@ -59,7 +59,7 @@ In order to avoid installing additional dependencies, Ryubook doesn't support ou
 
 Note that passing ``doc`` will always output to ``docx``. This is a limitation of Pandoc and not Ryubook. If you still need to output to the legacy Word document format, then you will have to use another tool or word processor that supports saving to that format.
 
-PDF support requires [wkhtmltopdf](https://wkhtmltopdf.org/) (recommended), [weasyprint](https://weasyprint.org/) or [prince](https://www.princexml.com/).
+> ℹ️ PDF support requires [wkhtmltopdf](https://wkhtmltopdf.org/) (recommended), [weasyprint](https://weasyprint.org/) or [prince](https://www.princexml.com/).
 
 ## Init
 
