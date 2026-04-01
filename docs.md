@@ -32,9 +32,9 @@ SUBCOMMANDS:
 USAGE:
     ryubook build [FLAGS]
 FLAGS:
-  -t --title [TITLE]
-  -f  --format [FORMAT]
-  -d  --dir [DIRECTORY]
+  -t --title
+  -f  --format
+  -d  --dir
 ```
 
 Using the ``build`` command alone will build the book as is and output ``book.ePub``. You can also build formats other then the default ``ePub`` by passing `-f` or ``--format``. In build, ``-d`` or ``--dir`` allows for building a book outside of the current directory.
@@ -67,7 +67,9 @@ If you wish to output to something other an ePub, RyuBook does support a few for
 USAGE:
     ryubook init [FLAGS]
 FLAGS:
-  -t --title  -a  --author  -d  --dir
+  -t --title
+  -a  --author
+  -d  --dir
 ```
 
 Init will create ``/src/title.txt``, ``/src/01-helloworld.md``, and a ``.gitignore``. By passing ``-t`` or ``-a`` Ryubook will write the title and author, respectfully, to the ``title.txt``. In Init, ``-d`` or ``--dir`` allows for creating a book project of the current directory.
