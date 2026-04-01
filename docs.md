@@ -68,9 +68,10 @@ USAGE:
     ryubook init [FLAGS]
 FLAGS:
   -t --title  -a  --author  -d  --dir```
+```
 
 Init will create ``/src/title.txt``, ``/src/01-helloworld.md``, and a ``.gitignore``. By passing ``-t`` or ``-a`` Ryubook will write the title and author, respectfully, to the ``title.txt``. In Init, ``-d`` or ``--dir`` allows for creating a book project of the current directory.
-```
+
 
 ### title.txt
 
