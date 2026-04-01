@@ -45,11 +45,11 @@ FLAGS:
 
 Using the ``build`` command alone will build the book as is and output ``book.epub``. You can also build formats other then the default ``epub`` by passing `-f` or ``--format``. In build, ``-d`` or ``--dir`` allows for building a book outside of the current directory.
 
-Note the book name is currently grabbed from the current or specified directory and not from ``title.txt``. This is a limitation in Ryubook and NOT Pandoc.
+---
+
+> ℹ️ The book name is grabbed from the current or specified directory and not from ``title.txt``. This is a limitation in RyuBook and NOT Pandoc.
 
 ### Supported formats
-
-In order to avoid installing additional dependencies, Ryubook doesn't support outputting to all of Pandoc's supported formats.
 
 - ``odt``
 - ``docx``
@@ -57,8 +57,11 @@ In order to avoid installing additional dependencies, Ryubook doesn't support ou
 - ``html``
 - ``pdf``
 
+---
 
-> ℹ️ Passing ``doc`` will always output to ``docx``.
+> ℹ️ In order to avoid installing additional dependencies, RyuBook doesn't support outputting to all of Pandoc's supported formats.
+
+> ℹ️ Even if you choose ``doc``, it will always output to ``docx``.
 
 > ⚠️ PDF support requires [wkhtmltopdf](https://wkhtmltopdf.org/) (recommended), [weasyprint](https://weasyprint.org/) or [prince](https://www.princexml.com/).
 
