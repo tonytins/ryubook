@@ -1,5 +1,3 @@
-using RyuBook.Interface;
-
 namespace RyuBook.Models;
 
 class BaseOptions : IOptions

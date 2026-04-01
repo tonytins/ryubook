@@ -1,9 +1,6 @@
 // This project is licensed under the BSD 3-Clause license.
 // See the LICENSE file in the project root for more information.
-using System.Globalization;
 using RyuBook;
-using RyuBook.Interface;
-using RyuBook.Models;
 
 Random rnd = new();
 
