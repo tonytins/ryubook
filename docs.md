@@ -87,4 +87,4 @@ The book's metadata is contained in ``title.txt`` and will be read by Pandoc.
 
 ---
 
-> ℹ️ RyuBook assumes the language based on your relative location. In this example, it choose `en-US` because my native language is English because I live in the US.
+> ℹ️ RyuBook automatically chooses the language based on your relative location. In this example, it chose `en-US` because I live in the US.
