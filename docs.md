@@ -1,10 +1,10 @@
-# RyuBook Documentation
+# Using RyuBook
 
-RyuBook is a ePub generator written in C#. It uses [Markdown](https://daringfireball.net/projects/markdown/syntax) as a source and [Pandoc](https://pandoc.org/) for generation.
+RyuBook is an epub generator tool written in C# that uses Markdown as a source and [Pandoc](https://pandoc.org/) for generation.
 
 ## Directory Structure
 
-```txt
+```
 +-- src
 |   +-- book.md
 |   +-- title.txt
@@ -14,7 +14,7 @@ The book contents exists in the ``/src`` directory. Both ``book.md`` and ``title
 
 ## Usage
 
-```txt
+```
 USAGE:
     ryubook [SUBCOMMAND]
 
@@ -33,7 +33,7 @@ SUBCOMMANDS:
 
 ## Build
 
-```txt
+```
 USAGE:
     ryubook build [FLAGS]
 
@@ -63,7 +63,7 @@ PDF support requires [wkhtmltopdf](https://wkhtmltopdf.org/) (recommended), [wea
 
 ## Init
 
-```txt
+```
 USAGE:
     ryubook init [FLAGS]
 
@@ -77,7 +77,7 @@ Init will create ``/src/title.txt``, ``/src/01-helloworld.md``, and a ``.gitigno
 
 ### title.txt
 
-```txt
+```
 ---
 title: Book Title
 author: Lorem Ipsum
